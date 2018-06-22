@@ -38,7 +38,7 @@ class IndexView(generic.ListView):
         max_page = ctx['page_obj'].paginator.num_pages+1
         page_range = min(max_page, 7)
         if self.page < 4:
-            ctx['nav_page_range'] = list(range(1,page_range+1))
+            ctx['nav_page_range'] = list(range(1,page_range))
         elif self.page > max_page - 4:
             ctx['nav_page_range'] = list(range(max(1,max_page-page_range), max_page))
         else:
