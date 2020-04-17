@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import F
 from django.http import HttpResponseRedirect
 from django.utils.timezone import now
@@ -24,7 +25,8 @@ class IndexView(generic.TemplateView):
         return ctx
 
 
-class TaskDetailsView(generic.TemplateView):
+class TaskDetailsView(PermissionRequiredMixin, generic.TemplateView):
+    permission_required = "project_manager.view_taskmodel"
     template_name = "project_manager/task_details.html"
 
     def get_context_data(self, **kwargs):
@@ -34,7 +36,8 @@ class TaskDetailsView(generic.TemplateView):
         return ctx
 
 
-class AddTaskView(generic.TemplateView):
+class AddTaskView(PermissionRequiredMixin, generic.TemplateView):
+    permission_required = 'project_manager.add_taskmodel'
     template_name = "project_manager/add_task.html"
 
     def get_context_data(self, **kwargs):
@@ -42,7 +45,8 @@ class AddTaskView(generic.TemplateView):
         return ctx
 
 
-class EditTaskView(generic.TemplateView):
+class EditTaskView(PermissionRequiredMixin, generic.TemplateView):
+    permission_required = 'project_manager.update_taskmodel'
     template_name = "project_manager/task_details.html"
 
     def get_context_data(self, **kwargs):

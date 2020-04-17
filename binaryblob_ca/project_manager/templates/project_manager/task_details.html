@@ -11,10 +11,12 @@
 
     <form id="contact" action="{% url 'project_manager:edit_task_submit' ipk %}" method="post">
         {% csrf_token %}
+        {% if perms.project_manager.update_taskmodel %}
         {% if disabled != "" %}
             <a href="{% url 'project_manager:edit_task' ipk %}">Enable editing</a><br/>
         {% else %}
             <a href="{% url 'project_manager:details' ipk %}">Disable editing</a><br/>
+        {% endif %}
         {% endif %}
         {% if messages %}
         {% for message in messages %}

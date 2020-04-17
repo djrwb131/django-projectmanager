@@ -7,8 +7,17 @@
     <title>App-level Index</title>
 </head>
 <body>
-Active tasks: <a href="{% url 'project_manager:add_task' %}">(Click here to add a new task)</a><br/>
+{% if request.user.is_authenticated %}
+<a href="{% url 'project_manager:add_task' %}">(Click here to add a new task)</a>
+<a href="{% url 'logout' %}">(Click here to logout)</a>
+{% else %}
+<a href="{% url 'login' %}">(Click here to login)</a>
+{% endif %}
+<br/>
     <table border="1px">
+        <tr>
+            <th colspan="4">Active tasks:</th>
+        </tr>
         <tr>
             <th>Title</th>
             <th>Priority</th>
@@ -20,8 +29,12 @@ Active tasks: <a href="{% url 'project_manager:add_task' %}">(Click here to add 
             <td><a href="{% url 'project_manager:details' task.pk %}">{{ task.title }}</a></td>
             <td>{{ task.priority }}</td>
             <td>{{ task.deadline }}</td>
+            {% if perms.project_manager.update_task_status %}
             <td>{{ task.status }} <a href="{% url 'project_manager:update_status' task.pk %}">[Update]</a>
                 <a href="{% url 'project_manager:rollback_status' task.pk %}">[Rollback]</a></td>
+            {% else %}
+            <td>{{ task.status }}</td>
+            {% endif %}
         </tr>
 
         {% endfor %}
