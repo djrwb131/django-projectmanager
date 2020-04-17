@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="{% static 'project_manager/form_style.css' %}">
+    <meta charset="UTF-8">
+    <title>Edit task</title>
+</head>
+<body>
+    <div class="container">
+
+    <form id="contact" action="{% url 'project_manager:edit_task_submit' ipk %}" method="post">
+        {% csrf_token %}
+        {% if disabled != "" %}
+            <a href="{% url 'project_manager:edit_task' ipk %}">Enable editing</a><br/>
+        {% else %}
+            <a href="{% url 'project_manager:details' ipk %}">Disable editing</a><br/>
+        {% endif %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="message">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+            <fieldset>
+                <label class="one-line" for="task_priority">Priority: (Safe to leave at default)</label>
+                <input {{ disabled }} class="one-line" type="number" name="task_priority" value="{{task.priority}}">
+            </fieldset>
+            <fieldset>
+                <label for="task_title">Task title: </label>
+                <input {{ disabled }} class="one-line" type="text" maxlength="80" name="task_title" value="{{task.title}}">
+            </fieldset>
+            <fieldset>
+                <label for="task_desc">Task description: </label><br/>
+                <textarea {{ disabled }} style="width:600px;height:300px;" name="task_desc">{{task.desc}}</textarea>
+            </fieldset>
+            <fieldset>
+                <label for="task_scheduled_start">Scheduled to start on: ({{task.scheduled_start}})</label>
+                <input {{ disabled }} class="one-line" type="datetime-local" name="task_scheduled_start" value="{{task.scheduled_start|date:'Y-m-d\TH:i'}}">
+            </fieldset>
+
+                {% if task.started_on %}
+                <fieldset class="highlight">
+                    <label for="task_started_on">This task was started on: ({{task.started_on}})</label>
+                {% else %}
+                <fieldset>
+                    <label for="task_started_on">Actual start time:</label>
+                {% endif %}
+                <input {{ disabled }} class="one-line" type="datetime-local" name="task_started_on" value="{{task.started_on|date:'Y-m-d\TH:i'}}">
+            </fieldset>
+            <fieldset>
+                <label for="task_deadline">With a deadline on: ({{task.deadline}})</label>
+                <input {{ disabled }} style="float:right;clear:both;" type="datetime-local" name="task_deadline" value="{{task.deadline|date:'Y-m-d\TH:i'}}">
+            </fieldset>
+                {% if task.completed_on %}
+                <fieldset class="highlight">
+                    <label for="task_completed_on">This task was completed on: ({{task.completed_on}})</label>
+                {% else %}
+                <fieldset>
+                    <label for="task_completed_on">Completion date:</label>
+                {% endif %}
+                <input {{ disabled }} class="one-line" type="datetime-local" name="task_completed_on" value="{{task.completed_on|date:'Y-m-d\TH:i'}}">
+            </fieldset>
+                    {% if disabled == "" %}
+                        <input type="submit" value="Submit Edit">
+                    {% endif %}
+                    <a class="one-line" href="{% url 'project_manager:index' %}">Return to index</a>
+            <fieldset>
+    </form>
+    </div>
+</body>
+</html>

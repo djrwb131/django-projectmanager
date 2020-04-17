@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="{% static 'project_manager/form_style.css' %}">
+    <meta charset="UTF-8">
+    <title>Add new task</title>
+</head>
+<body>
+    <div class="container">
+    <form id="contact" action="{% url 'project_manager:add_task_submit' %}" method="post">
+        {% csrf_token %}
+        <fieldset>
+            <label class="one-line" for="task_priority">Priority: (Safe to leave at default)</label>
+            <input class="one-line" type="number" value="10" name="task_priority">
+        </fieldset>
+        <fieldset>
+            <label for="task_title">Task title: </label>
+            <input type="text" maxlength="80" name="task_title">
+        </fieldset>
+        <fieldset>
+            <label for="task_desc">Task description: </label>
+            <textarea style="width:600px;height:300px;" name="task_desc"></textarea>
+        </fieldset>
+        <fieldset>
+            <label for="task_scheduled_start">Scheduled to start on:</label>
+            <input class="one-line" type="datetime-local" name="task_scheduled_start">
+        </fieldset>
+        <fieldset>
+            <label for="task_deadline">With a deadline on:</label>
+            <input class="one-line" type="datetime-local" name="task_deadline">
+        </fieldset>
+        <fieldset>
+            <input type="submit" value="Add">
+            <a class="one-line" href="{% url 'project_manager:index' %}">Return to index</a>
+        </fieldset>
+    </form>
+    </div>
+</body>
+</html>
