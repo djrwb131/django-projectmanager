@@ -12,4 +12,5 @@ urlpatterns = (
     path('details/<int:ipk>/', views.TaskDetailsView.as_view(), name="details"),
     path('edit_task/<int:ipk>/', views.EditTaskView.as_view(), name="edit_task"),
     path('edit_task/submit/<int:ipk>', views.edit_task_submit, name="edit_task_submit"),
+    path('add_note/submit/<int:ipk>', views.add_note_submit, name="add_note"),
 )

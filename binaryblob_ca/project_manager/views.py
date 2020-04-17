@@ -6,7 +6,7 @@ from django.utils.timezone import now
 from django.urls import reverse
 from django.views import generic
 
-from .models import TaskModel, StatusModel
+from .models import TaskModel, StatusModel, TaskNoteModel
 
 
 # views need to do this stuff:
@@ -32,6 +32,7 @@ class TaskDetailsView(PermissionRequiredMixin, generic.TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['task'] = TaskModel.objects.get(pk=kwargs['ipk'])
+        ctx['notes'] = TaskNoteModel.objects.filter(task=ctx['task'])
         ctx['disabled'] = "disabled"
         return ctx
 
@@ -52,6 +53,7 @@ class EditTaskView(PermissionRequiredMixin, generic.TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['task'] = TaskModel.objects.get(pk=ctx['ipk'])
+        ctx['notes'] = TaskNoteModel.objects.filter(task=ctx['task'])
         ctx['disabled'] = ""
         return ctx
 
@@ -119,3 +121,11 @@ def update_task(task, request):
     if task.status is None:
         task.status = StatusModel.objects.get(progress_id=0)
     task.save()
+
+def add_note_submit(request, ipk):
+    note = TaskNoteModel()
+    note.task = TaskModel.objects.get(pk=ipk)
+    note.date = now()
+    note.text = request.POST['task_note']
+    note.save()
+    return HttpResponseRedirect(reverse('project_manager:details',args=[ipk]))
