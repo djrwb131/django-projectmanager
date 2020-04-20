@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class StatusModel(models.Model):
@@ -10,7 +11,7 @@ class StatusModel(models.Model):
 
 
 class TaskModel(models.Model):
-    status = models.ForeignKey(StatusModel, on_delete=models.PROTECT,default=StatusModel.objects.get(progress_id=0))
+    status = models.ForeignKey(StatusModel, on_delete=models.PROTECT, default=StatusModel.objects.get(progress_id=0).pk)
     title = models.CharField(max_length=80)
     desc = models.TextField()
     priority = models.IntegerField()
@@ -18,26 +19,52 @@ class TaskModel(models.Model):
     started_on = models.DateTimeField(blank=True, null=True)
     deadline = models.DateTimeField(blank=True, null=True)
     completed_on = models.DateTimeField(blank=True, null=True)
+    owner = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
 
     def __str__(self):
         return self.title
 
 
+class KeyphraseModel(models.Model):
+    keyphrase = models.CharField(max_length=80)
+
+    def __str__(self):
+        return self.keyphrase
+
+
+class TaskKeyphraseLinkModel(models.Model):
+    # task which should be linked to the keyword
+    root_task = models.ForeignKey(TaskModel, on_delete=models.CASCADE, related_name="root_task")
+    # specific subtask, if applicable
+    task = models.ForeignKey(TaskModel, on_delete=models.CASCADE, null=True, related_name="task")
+    # phrase to link
+    phrase = models.ForeignKey(KeyphraseModel, on_delete=models.PROTECT)
+
+
 class TaskNoteModel(models.Model):
-    task = models.ForeignKey(TaskModel,on_delete=models.CASCADE)
+    task = models.ForeignKey(TaskModel, on_delete=models.CASCADE)
     text = models.TextField()
     date = models.DateTimeField()
+    owner = models.ForeignKey(User, on_delete=models.PROTECT, default=User.objects.get(username="testuser").pk)
 
     def __str__(self):
         return "[%s]: Note on %s" % (self.task.title, self.date)
 
 
+class EventModel(models.Model):
+    date = models.DateTimeField()
+    owner = models.ForeignKey(User, on_delete=models.PROTECT)
+    old_data = models.TextField(null=True)
+    new_data = models.TextField()
+    table = models.CharField(max_length=64)
+    field = models.CharField(null=True,max_length=64)
+    r_id = models.IntegerField()
+
 class TaskDependencyModel(models.Model):
-    task = models.ForeignKey(TaskModel,on_delete=models.CASCADE,related_name="task_queried")
-    depends_on = models.ForeignKey(TaskModel,on_delete=models.PROTECT,related_name="task_depends_on")
+    task = models.ForeignKey(TaskModel, on_delete=models.CASCADE, related_name="task_queried")
+    depends_on = models.ForeignKey(TaskModel, on_delete=models.PROTECT, related_name="task_depends_on")
 
-
-#TODO: Implement task groups and alternate tasks
+# TODO: Implement task groups and alternate tasks
 # An alternative group is considered complete if any task within it is complete
 # Different tasks have different dependencies - being in the same alternative group
 # does not imply having the same dependency path
