@@ -39,6 +39,10 @@
                        value="{{task.priority|default:100}}">
             </fieldset>
             <fieldset>
+                <label for="task_owner">Task owner: {{task.owner}}</label>
+                <input {{ disabled }} class="one-line" type="text" name="task_owner" placeholder="username here">
+            </fieldset>
+            <fieldset>
                 <label for="task_title">Task title: </label>
                 <input {{ disabled }} class="one-line" type="text" maxlength="80" name="task_title"
                        value="{{task.title}}">
@@ -56,11 +60,11 @@
                     {% endfor %}
                 </select>
                 {% else %}
-                {% if task.parent_task %}
-                <label>Parent task: <a href="{% url 'project_manager:details' task.parent_task.id %}">{{task.parent_task.title}}</a></label>
-                {% else%}
-                <label>Parent task: None </label>
-                {% endif %}
+                    {% if task.parent_task %}
+                    <label>Parent task: <a href="{% url 'project_manager:details' task.parent_task.id %}">{{task.parent_task.title}}</a></label>
+                    {% else%}
+                    <label>Parent task: None </label>
+                    {% endif %}
                 {% endif %}
             </fieldset>
             {% if not disabled %}
@@ -93,6 +97,8 @@
                 {% for dep in dependencies %}
                 <a href="{% url 'project_manager:details' dep.id %}">{{dep.title}}</a><br/>
                 {% endfor %}
+                {% else %}
+                    Nothing - Task is standalone
                 {% endif %}
             </fieldset>
             {% endif %}

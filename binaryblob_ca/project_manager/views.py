@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.models import User
 from django.db.models import F
 from django.http import HttpResponseRedirect
 from django.utils.timezone import now
@@ -23,19 +24,63 @@ class IndexView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['most_pressing'] = TaskModel.objects.filter(status__progress_id__lt=80).order_by(
+        mp = TaskModel.objects.filter(status__progress_id__lt=80).order_by(
             F('deadline').asc(nulls_last=True)
-        )[0]
-        ctx['highest_priority'] = TaskModel.objects.filter(status__progress_id__lt=80).order_by(
+        )
+        mpi = 0
+        hp = TaskModel.objects.filter(status__progress_id__lt=80).order_by(
             'priority',
             F('deadline').asc(nulls_last=True)
-        )[0]
-        ctx['needs_polish'] = TaskModel.objects.filter(status__progress_id__exact=80).order_by(
+        )
+        hpi = 0
+        np =  TaskModel.objects.filter(status__progress_id__exact=80).order_by(
             'priority'
-        )[0]
+        )
+        npi = 0
+
+        # mp, hp, np
+        ctx['most_pressing'] = None
+        if len(mp)-mpi > 0:
+            ctx['most_pressing'] = mp[mpi]
+            mpi += 1
+        if ctx['most_pressing'] is None:
+            if len(hp)-hpi > 0:
+                ctx['most_pressing'] = hp[hpi]
+                hpi += 1
+            elif len(np)-npi >0:
+                ctx['most_pressing'] = np[npi]
+                npi += 1
+
+        #hp, mp, np
+        ctx['highest_priority'] = None
+        if len(hp)-hpi > 0:
+            ctx['highest_priority'] = hp[hpi]
+            hpi += 1
+        if ctx['highest_priority'] is None:
+            if len(mp)-mpi > 0:
+                ctx['highest_priority'] = mp[mpi]
+                mpi += 1
+            elif len(np)-npi >0:
+                ctx['highest_priority'] = np[npi]
+                npi += 1
+
+        # np, mp, hp
+        ctx['needs_polish'] = None
+        if len(np)-npi > 0:
+            ctx['needs_polish'] = np[npi]
+            npi += 1
+        if ctx['needs_polish'] is None:
+            if len(mp)-mpi > 0:
+                ctx['needs_polish'] = mp[mpi]
+                mpi += 1
+            elif len(hp)-hpi >0:
+                ctx['needs_polish'] = hp[hpi]
+                hpi += 1
+
         ctx['incomplete_tasks'] = TaskModel.objects.filter(
             status__progress_id__lt=100
         ).order_by(F('deadline').asc(nulls_last=True))
+
         ctx['complete_tasks'] = TaskModel.objects.filter(
             status__progress_id__exact=100
         ).order_by('priority')
@@ -205,6 +250,7 @@ def update_task(task, request):
     cur_deps = TaskDependencyModel.objects.filter(task=task)
     task_dep_add = request.POST.get('task_deps',None)
     task_dep_remove = request.POST.get('task_deps_remove',None)
+    task_new_owner = request.POST.get('task_owner',None)
     if task_dep_remove:
         cur_deps.filter(depends_on=dep_tasks).delete()
         cur_deps.save()
@@ -213,7 +259,13 @@ def update_task(task, request):
         b.task = task
         b.depends_on = TaskModel.objects.get(pk=task_dep_add)
         b.save()
-
+    if task_new_owner:
+        try:
+            a = task.owner
+            task.owner = User.objects.get(username=task_new_owner)
+            log_event(task, request.user, "owner", a, task_new_owner)
+        except User.DoesNotExist:
+            messages.error(request,"Owner was not updated: No such user!")
 
 
 def add_note_submit(request, ipk):

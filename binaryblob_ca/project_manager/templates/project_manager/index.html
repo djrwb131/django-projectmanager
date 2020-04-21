@@ -33,12 +33,13 @@
     <div class="all_tasks">
         <table class="table-fill" border="1px">
             <tr>
-                <th colspan="4">Available Tasks</th>
+                <th colspan="5">Available Tasks</th>
             </tr>
             <tr>
                 <th width="50%">Title</th>
                 <th width="auto">Priority</th>
                 <th width="auto">Deadline</th>
+                <th width="auto">Owner</th>
                 <th width="auto">Status</th>
             </tr>
             {% for task in incomplete_tasks %}
@@ -46,7 +47,8 @@
                 <td>{{ task.title }}</td>
                 <td>{{ task.priority }}</td>
                 <td>{{ task.deadline }}</td>
-                {% if perms.project_manager.update_task_status %}
+                <td>{{ task.owner }}</td>
+                {% if perms.project_manager.update_task_status or request.user.is_authenticated and task.owner == request.user %}
                 <td>{{ task.status }} <a href="{% url 'project_manager:update_status' task.pk %}">[Update]</a>
                     <a href="{% url 'project_manager:rollback_status' task.pk %}">[Rollback]</a></td>
                 {% else %}
