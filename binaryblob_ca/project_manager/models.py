@@ -9,7 +9,8 @@ class StatusModel(models.Model):
     def __str__(self):
         return self.title
 
-#TODO: These classes are pretty devoid of member functions. A lot of stuff is in views.py that shouldn't be.
+
+# TODO: These classes are pretty devoid of member functions. A lot of stuff is in views.py that shouldn't be.
 
 class TaskModel(models.Model):
     status = models.ForeignKey(StatusModel, on_delete=models.PROTECT, default=StatusModel.objects.get(progress_id=0).pk)
@@ -25,6 +26,13 @@ class TaskModel(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ChecklistModel(models.Model):
+    task = models.ForeignKey(TaskModel, on_delete=models.CASCADE, related_name="task_checklist")
+    title = models.CharField(max_length=80)
+    order = models.IntegerField()
+    status = models.ForeignKey(StatusModel, on_delete=models.PROTECT, default=StatusModel.objects.get(progress_id=0).pk)
 
 
 class KeyphraseModel(models.Model):
@@ -44,7 +52,7 @@ class TaskKeyphraseLinkModel(models.Model):
 
 
 class TaskNoteModel(models.Model):
-    task = models.ForeignKey(TaskModel, on_delete=models.CASCADE)
+    task = models.ForeignKey(TaskModel, on_delete=models.CASCADE, related_name="task_notes")
     text = models.TextField()
     date = models.DateTimeField()
     owner = models.ForeignKey(User, on_delete=models.PROTECT, default=User.objects.get(username="testuser").pk)
