@@ -1,2 +1,6 @@
 /binaryblob_ca/db.sqlite3
 /binaryblob_ca/my.cnf
+/binaryblob_ca/binaryblob_ca/static/jquery-3.5.0.js
+/binaryblob_ca/binaryblob_ca/static/jquery-3.5.0.min.js
+/Pipfile.lock.bak
+/wowee.cer
