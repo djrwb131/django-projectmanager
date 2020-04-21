@@ -76,26 +76,33 @@ class EditTaskView(PermissionRequiredMixin, generic.TemplateView):
         return ctx
 
 
-def log_event_post(request,obj,field,req_field):
+def log_event(obj, owner, field, old_value, new_value):
     event = EventModel()
     event.r_id = obj.pk
     event.table = obj._meta.db_table
-    event.old_data = obj.__dict__[field]
-    event.new_data = request.POST[req_field]
+    event.field = field
+    event.old_data = old_value
+    event.new_data = new_value
     event.date = now()
-    event.owner = request.user
+    event.owner = owner
     event.save()
 
 
-def log_status_update(request,task,status):
-    event = EventModel()
-    event.r_id = task.pk
-    event.table = task._meta.db_table
-    event.old_data = task.status
-    event.new_data = status
-    event.date = now()
-    event.owner = request.user
-    event.save()
+def log_event_post(request, obj, field, req_field):
+    log_event(obj, request.user, field, obj.__dict__[field], request.POST[req_field])
+
+
+def log_status_update(request, task, status):
+    log_event(task, request.user, "status", task.status, status)
+
+
+def log_changed_fields(request, obj, changed_fields):
+    for f in changed_fields:
+        log_event(obj,request.user,f[0],f[1],f[2])
+
+
+def log_new_task(request, task):
+    log_event(task,request.user,"","","Created object")
 
 
 def update_task_status(request, ipk):
@@ -103,9 +110,9 @@ def update_task_status(request, ipk):
     current = TaskModel.objects.get(pk=ipk).status
 
     if current.progress_id == 0:
-        request.POST["started_on"] = now()
-        log_event_post(request,task,"started_on","started_on")
-        task.started_on = now()
+        s = now()
+        log_event(task, request.user, "started_on", task.started_on, s)
+        task.started_on = s
 
     next_status = StatusModel.objects.filter(progress_id__gt=current.progress_id).order_by('progress_id')
     if next_status:
@@ -120,8 +127,7 @@ def rollback_task_status(request, ipk):
     current = TaskModel.objects.get(pk=ipk).status
     last = StatusModel.objects.filter(progress_id__lt=current.progress_id).order_by(F('progress_id').desc())[0]
     if last.progress_id == 0:
-        request.POST["started_on"] = None
-        log_event_post(request,task,"started_on","started_on")
+        log_event(task, request.user, "started_on", task.started_on, None)
         task.started_on = None
     if last:
         log_status_update(request, task, last)
@@ -130,23 +136,12 @@ def rollback_task_status(request, ipk):
     return HttpResponseRedirect(reverse('project_manager:index'))
 
 
-def log_new_task(request,task):
-    event = EventModel()
-    event.table = task._meta.db_table
-    event.r_id = task.pk
-    event.old_data = "None"
-    event.new_data = "Object was created"
-    event.date = now()
-    event.owner = request.user
-    event.save()
-
-
 def add_task_submit(request):
     task = TaskModel()
     update_task(task, request)
     task.status = StatusModel.objects.get(progress_id=0)
     task.save()
-    log_new_task(request,task)
+    log_new_task(request, task)
 
     messages.success(request, "Added successfully.")
     return HttpResponseRedirect(reverse('project_manager:details', args=[task.pk]))
@@ -157,22 +152,6 @@ def edit_task_submit(request, ipk):
     update_task(task, request)
     messages.success(request, 'Updated successfully.')
     return HttpResponseRedirect(reverse('project_manager:details', args=[ipk]))
-
-
-def log_changed_fields(request,obj,changed_fields):
-    for f in changed_fields:
-        event = EventModel()
-        obj_f = f[0]
-        old_v = f[1]
-        new_v = f[2]
-        event.table = obj._meta.db_table
-        event.r_id = obj.pk
-        event.field = obj_f
-        event.old_data = old_v
-        event.new_data = new_v
-        event.date = now()
-        event.owner = request.user
-        event.save()
 
 
 def update_task(task, request):
@@ -193,19 +172,19 @@ def update_task(task, request):
     for field in post_fields:
         if field in request.POST:
             if not task.__dict__[field[5:]] == request.POST[field]:
-                changed_fields.append((field[5:],task.__dict__[field[5:]],request.POST[field],))
+                changed_fields.append((field[5:], task.__dict__[field[5:]], request.POST[field],))
                 task.__dict__[field[5:]] = request.POST[field]
     for field in datetime_fields:
         if field in request.POST and not request.POST[field] == '':
             if not task.__dict__[field[5:]] == request.POST[field]:
-                changed_fields.append((field,task.__dict__[field[5:]],request.POST[field],))
+                changed_fields.append((field, task.__dict__[field[5:]], request.POST[field],))
                 task.__dict__[field[5:]] = request.POST[field]
     next_status = None
     if task.status is None:
         next_status = StatusModel.objects.get(progress_id=0)
         task.status = next_status
     task.save()
-    log_changed_fields(request,task,changed_fields)
+    log_changed_fields(request, task, changed_fields)
     if next_status:
         log_status_update(request, task, next_status)
 
@@ -218,4 +197,4 @@ def add_note_submit(request, ipk):
     note.owner = request.user
     note.save()
 
-    return HttpResponseRedirect(reverse('project_manager:details',args=[ipk]))
+    return HttpResponseRedirect(reverse('project_manager:details', args=[ipk]))
