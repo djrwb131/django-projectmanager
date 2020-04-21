@@ -9,6 +9,7 @@ class StatusModel(models.Model):
     def __str__(self):
         return self.title
 
+#TODO: These classes are pretty devoid of member functions. A lot of stuff is in views.py that shouldn't be.
 
 class TaskModel(models.Model):
     status = models.ForeignKey(StatusModel, on_delete=models.PROTECT, default=StatusModel.objects.get(progress_id=0).pk)
@@ -20,6 +21,7 @@ class TaskModel(models.Model):
     deadline = models.DateTimeField(blank=True, null=True)
     completed_on = models.DateTimeField(blank=True, null=True)
     owner = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
+    parent_task = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.title
@@ -57,12 +59,19 @@ class EventModel(models.Model):
     old_data = models.TextField(null=True)
     new_data = models.TextField()
     table = models.CharField(max_length=64)
-    field = models.CharField(null=True,max_length=64)
+    field = models.CharField(null=True, max_length=64)
     r_id = models.IntegerField()
+
+    def __str__(self):
+        return "(%s #%i).%s changed by %s" % (self.table, self.r_id, self.field, self.owner)
+
 
 class TaskDependencyModel(models.Model):
     task = models.ForeignKey(TaskModel, on_delete=models.CASCADE, related_name="task_queried")
     depends_on = models.ForeignKey(TaskModel, on_delete=models.PROTECT, related_name="task_depends_on")
+
+    def __str__(self):
+        return "[%s] -> [%s]" % (self.task.title, self.depends_on.title)
 
 # TODO: Implement task groups and alternate tasks
 # An alternative group is considered complete if any task within it is complete
