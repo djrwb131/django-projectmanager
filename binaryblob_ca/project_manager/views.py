@@ -6,7 +6,7 @@ from django.utils.timezone import now
 from django.urls import reverse
 from django.views import generic
 
-from .models import TaskModel, StatusModel, TaskNoteModel, EventModel
+from .models import TaskModel, StatusModel, TaskNoteModel, EventModel, TaskDependencyModel
 
 
 # views need to do this stuff:
@@ -16,6 +16,8 @@ from .models import TaskModel, StatusModel, TaskNoteModel, EventModel
 # - Edit task - done
 # - Update task status - done
 
+#TODO: half of this shouldn't be in views.py - a lot of this belongs in the model
+#TODO: we're only using TemplateView. There are better options.
 class IndexView(generic.TemplateView):
     template_name = "project_manager/index.html"
 
@@ -49,6 +51,7 @@ class TaskDetailsView(PermissionRequiredMixin, generic.TemplateView):
         ctx['task'] = TaskModel.objects.get(pk=kwargs['ipk'])
         ctx['notes'] = TaskNoteModel.objects.filter(task=ctx['task'])
         ctx['disabled'] = "disabled"
+        ctx['dependencies'] = TaskModel.objects.filter(task_depends_on__task__id=ctx['ipk'])
         return ctx
 
 
@@ -59,6 +62,7 @@ class AddTaskView(PermissionRequiredMixin, generic.TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['disabled'] = ""
+        ctx['all_tasks'] = TaskModel.objects.all()
         ctx['edit_mode'] = "add"
         return ctx
 
@@ -73,12 +77,17 @@ class EditTaskView(PermissionRequiredMixin, generic.TemplateView):
         ctx['notes'] = TaskNoteModel.objects.filter(task=ctx['task'])
         ctx['disabled'] = ""
         ctx['edit_mode'] = "edit"
+        ctx['all_tasks'] = TaskModel.objects.exclude(pk=kwargs['ipk'])
+        ctx['dependencies'] = TaskModel.objects.filter(task_depends_on__task__id=ctx['ipk'])
         return ctx
 
 
 def log_event(obj, owner, field, old_value, new_value):
     event = EventModel()
-    event.r_id = obj.pk
+    if obj.pk:
+        event.r_id = obj.pk
+    elif obj.task.pk:
+        event.r_id = obj.task.pk
     event.table = obj._meta.db_table
     event.field = field
     event.old_data = old_value
@@ -98,11 +107,11 @@ def log_status_update(request, task, status):
 
 def log_changed_fields(request, obj, changed_fields):
     for f in changed_fields:
-        log_event(obj,request.user,f[0],f[1],f[2])
+        log_event(obj, request.user, f[0], f[1], f[2])
 
 
 def log_new_task(request, task):
-    log_event(task,request.user,"","","Created object")
+    log_event(task, request.user, "", "", "Created object")
 
 
 def update_task_status(request, ipk):
@@ -183,10 +192,28 @@ def update_task(task, request):
     if task.status is None:
         next_status = StatusModel.objects.get(progress_id=0)
         task.status = next_status
-    task.save()
     log_changed_fields(request, task, changed_fields)
     if next_status:
         log_status_update(request, task, next_status)
+    parent_task = request.POST.get("task_parent", None)
+    if parent_task:
+        log_event(task, request.user, "parent_task", task.parent_task, parent_task)
+        task.parent_task = TaskModel.objects.get(pk=parent_task)
+    task.save()
+
+    #TODO: task dependencies can only be added or removed one at a time...
+    cur_deps = TaskDependencyModel.objects.filter(task=task)
+    task_dep_add = request.POST.get('task_deps',None)
+    task_dep_remove = request.POST.get('task_deps_remove',None)
+    if task_dep_remove:
+        cur_deps.filter(depends_on=dep_tasks).delete()
+        cur_deps.save()
+    if task_dep_add:
+        b = TaskDependencyModel()
+        b.task = task
+        b.depends_on = TaskModel.objects.get(pk=task_dep_add)
+        b.save()
+
 
 
 def add_note_submit(request, ipk):
