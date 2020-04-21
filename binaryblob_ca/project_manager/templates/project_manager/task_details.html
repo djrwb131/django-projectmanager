@@ -44,9 +44,58 @@
                        value="{{task.title}}">
             </fieldset>
             <fieldset>
-                <label for="task_desc">Task description: </label><br/>
+                <label for="task_desc">Task description: </label>
                 <textarea {{ disabled }} style="width:600px;height:300px;" name="task_desc">{{task.desc}}</textarea>
             </fieldset>
+            <fieldset>
+                {% if not disabled %}
+                <label for="task_parent">Parent: (Current is [{{task.parent_task.title | default:"None"}}])</label><br/>
+                <select name="task_parent" size="10">
+                    {% for task in all_tasks %}
+                    <option value="{{task.id}}">{{task.title}}</option>
+                    {% endfor %}
+                </select>
+                {% else %}
+                {% if task.parent_task %}
+                <label>Parent task: <a href="{% url 'project_manager:details' task.parent_task.id %}">{{task.parent_task.title}}</a></label>
+                {% else%}
+                <label>Parent task: None </label>
+                {% endif %}
+                {% endif %}
+            </fieldset>
+            {% if not disabled %}
+            <fieldset>
+                <label for="task_deps">Add dependency:</label><br/>
+                <select name="task_deps" size="4">
+                    <option value=""></option>
+                    {% for t in all_tasks %}
+                    {% if not t in dependencies %}
+                    <option value="{{t.id}}">{{t.title}}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </fieldset>
+            <fieldset>
+                <label for="task_deps_remove">Remove dependency:</label><br/>
+                <select name="task_deps_remove" size="1">
+                    <option value=""></option>
+                    {% if dependencies %}
+                    {% for t in dependencies %}
+                    <option value="{{t.id}}">{{t.title}}</option>
+                    {% endfor %}
+                    {% endif %}
+                </select>
+            </fieldset>
+            {% else %}
+            <fieldset>
+                <label>Depends on:</label><br/>
+                {% if dependencies %}
+                {% for dep in dependencies %}
+                <a href="{% url 'project_manager:details' dep.id %}">{{dep.title}}</a><br/>
+                {% endfor %}
+                {% endif %}
+            </fieldset>
+            {% endif %}
             <fieldset>
                 <label for="task_scheduled_start">Scheduled to start on:
                     {{task.scheduled_start|default_if_none:""}}</label>
