@@ -74,6 +74,15 @@ WSGI_APPLICATION = 'binaryblob_ca.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+
+# I don't want to compile on the server!
+# PyMySQL is pure Python, so we'll use that instead of mysqlclient
+import pymysql
+pymysql.install_as_MySQLdb()
+
+# I'll admit this is a hack, but it works - the versioning system is different
+pymysql.version_info = (1, 3, 13)
+
 DATABASES = {
     'default': {
         #'ENGINE': 'django.db.backends.sqlite3',
