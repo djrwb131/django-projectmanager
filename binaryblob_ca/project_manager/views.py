@@ -1,13 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.models import User
-from django.db.models import F
+from django.db.models import F, Q
 from django.http import HttpResponseRedirect
 from django.utils.timezone import now
 from django.urls import reverse
 from django.views import generic
 
-from .models import TaskModel, StatusModel, TaskNoteModel, EventModel, TaskDependencyModel
+from .forms import AddTaskForm
+from .models import TaskModel, StatusModel, TaskNoteModel, EventModel, TaskDependencyModel, TaskPermissionModel, \
+    Permissions
 
 
 # views need to do this stuff:
@@ -17,113 +19,87 @@ from .models import TaskModel, StatusModel, TaskNoteModel, EventModel, TaskDepen
 # - Edit task - done
 # - Update task status - done
 
-#TODO: half of this shouldn't be in views.py - a lot of this belongs in the model
-#TODO: we're only using TemplateView. There are better options.
-class IndexView(generic.TemplateView):
+# TODO: we're only using TemplateView. There are better options.
+class IndexView(generic.ListView):
     template_name = "project_manager/index.html"
+    model = TaskModel
+    allow_empty = True
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.user = None
+
+    def setup(self, request, *args, **kwargs):
+        self.user = request.user
+        return super().setup(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return self.model.objects.filter(Q(owner=self.user) | Q(owner=None))
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        mp = TaskModel.objects.filter(status__progress_id__lt=80).order_by(
-            F('deadline').asc(nulls_last=True)
-        )
-        mpi = 0
-        hp = TaskModel.objects.filter(status__progress_id__lt=80).order_by(
-            'priority',
-            F('deadline').asc(nulls_last=True)
-        )
-        hpi = 0
-        np =  TaskModel.objects.filter(status__progress_id__exact=80).order_by(
-            'priority'
-        )
-        npi = 0
 
-        # mp, hp, np
-        ctx['most_pressing'] = None
-        if len(mp)-mpi > 0:
-            ctx['most_pressing'] = mp[mpi]
-            mpi += 1
-        if ctx['most_pressing'] is None:
-            if len(hp)-hpi > 0:
-                ctx['most_pressing'] = hp[hpi]
-                hpi += 1
-            elif len(np)-npi >0:
-                ctx['most_pressing'] = np[npi]
-                npi += 1
+        # I've no idea. Don't ask, it just works.
+        ctx['most_pressing'] = self.model.get_most_pressing(self.model)
+        ctx['highest_priority'] = self.model.get_highest_priority(self.model)
+        ctx['needs_polish'] = self.model.get_needs_polish(self.model)
+        ctx['incomplete_tasks'] = self.model.get_incomplete_tasks(self.model)
+        ctx['complete_tasks'] = self.model.get_complete_tasks(self.model)
 
-        #hp, mp, np
-        ctx['highest_priority'] = None
-        if len(hp)-hpi > 0:
-            ctx['highest_priority'] = hp[hpi]
-            hpi += 1
-        if ctx['highest_priority'] is None:
-            if len(mp)-mpi > 0:
-                ctx['highest_priority'] = mp[mpi]
-                mpi += 1
-            elif len(np)-npi >0:
-                ctx['highest_priority'] = np[npi]
-                npi += 1
-
-        # np, mp, hp
-        ctx['needs_polish'] = None
-        if len(np)-npi > 0:
-            ctx['needs_polish'] = np[npi]
-            npi += 1
-        if ctx['needs_polish'] is None:
-            if len(mp)-mpi > 0:
-                ctx['needs_polish'] = mp[mpi]
-                mpi += 1
-            elif len(hp)-hpi >0:
-                ctx['needs_polish'] = hp[hpi]
-                hpi += 1
-
-        ctx['incomplete_tasks'] = TaskModel.objects.filter(
-            status__progress_id__lt=100
-        ).order_by(F('deadline').asc(nulls_last=True))
-
-        ctx['complete_tasks'] = TaskModel.objects.filter(
-            status__progress_id__exact=100
-        ).order_by('priority')
         return ctx
 
 
-class TaskDetailsView(PermissionRequiredMixin, generic.TemplateView):
+class TaskDetailsView(PermissionRequiredMixin, generic.DetailView):
     permission_required = "project_manager.view_taskmodel"
-    template_name = "project_manager/task_details.html"
+    model = TaskModel
+    notes_model = TaskNoteModel
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['task'] = TaskModel.objects.get(pk=kwargs['ipk'])
-        ctx['notes'] = TaskNoteModel.objects.filter(task=ctx['task'])
-        ctx['disabled'] = "disabled"
-        ctx['dependencies'] = TaskModel.objects.filter(task_depends_on__task__id=ctx['ipk'])
+        ctx['notes'] = self.notes_model.objects.filter(task=self.object)
+        ctx['dependencies'] = self.model.objects.filter(task_depends_on__task=self.object)
         return ctx
 
 
-class AddTaskView(PermissionRequiredMixin, generic.TemplateView):
+class AddTaskView(PermissionRequiredMixin, generic.CreateView):
     permission_required = 'project_manager.add_taskmodel'
-    template_name = "project_manager/task_details.html"
+    form_class = AddTaskForm
+    model = TaskModel
+    # url = reverse("project_manager:index")
+
+    def __init__(self):
+        super().__init__()
+        self.object = self.model()
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['disabled'] = ""
-        ctx['all_tasks'] = TaskModel.objects.all()
+        ctx['all_tasks'] = self.model.objects.all()
         ctx['edit_mode'] = "add"
         return ctx
 
+    def post(self, request, *args, **kwargs):
+        resp = super().post(request, *args, **kwargs)
+        log_new_task(request, self.object)
+        return resp
 
-class EditTaskView(PermissionRequiredMixin, generic.TemplateView):
+    def add_task_submit(self, request):
+        update_task(task, request)
+        messages.success(request, "Added successfully.")
+        return HttpResponseRedirect(reverse('project_manager:details', args=[task.pk]))
+
+
+class EditTaskView(PermissionRequiredMixin, generic.edit.UpdateView):
     permission_required = 'project_manager.update_taskmodel'
-    template_name = "project_manager/task_details.html"
+    fields = [x.name for x in TaskModel._meta.fields]
+    model = TaskModel
+    notes_model = TaskNoteModel
+    template_name_suffix = "_update_form"
 
     def get_context_data(self, **kwargs):
+        print(self.fields)
         ctx = super().get_context_data(**kwargs)
-        ctx['task'] = TaskModel.objects.get(pk=ctx['ipk'])
-        ctx['notes'] = TaskNoteModel.objects.filter(task=ctx['task'])
-        ctx['disabled'] = ""
-        ctx['edit_mode'] = "edit"
-        ctx['all_tasks'] = TaskModel.objects.exclude(pk=kwargs['ipk'])
-        ctx['dependencies'] = TaskModel.objects.filter(task_depends_on__task__id=ctx['ipk'])
+        ctx['notes'] = self.notes_model.objects.filter(task=self.object)
         return ctx
 
 
@@ -190,15 +166,7 @@ def rollback_task_status(request, ipk):
     return HttpResponseRedirect(reverse('project_manager:index'))
 
 
-def add_task_submit(request):
-    task = TaskModel()
-    update_task(task, request)
-    task.status = StatusModel.objects.get(progress_id=0)
-    task.save()
-    log_new_task(request, task)
 
-    messages.success(request, "Added successfully.")
-    return HttpResponseRedirect(reverse('project_manager:details', args=[task.pk]))
 
 
 def edit_task_submit(request, ipk):
@@ -246,11 +214,11 @@ def update_task(task, request):
         task.parent_task = TaskModel.objects.get(pk=parent_task)
     task.save()
 
-    #TODO: task dependencies can only be added or removed one at a time...
+    # TODO: task dependencies can only be added or removed one at a time...
     cur_deps = TaskDependencyModel.objects.filter(task=task)
-    task_dep_add = request.POST.get('task_deps',None)
-    task_dep_remove = request.POST.get('task_deps_remove',None)
-    task_new_owner = request.POST.get('task_owner',None)
+    task_dep_add = request.POST.get('task_deps', None)
+    task_dep_remove = request.POST.get('task_deps_remove', None)
+    task_new_owner = request.POST.get('task_owner', None)
     if task_dep_remove:
         cur_deps.filter(depends_on=dep_tasks).delete()
         cur_deps.save()
@@ -264,8 +232,9 @@ def update_task(task, request):
             a = task.owner
             task.owner = User.objects.get(username=task_new_owner)
             log_event(task, request.user, "owner", a, task_new_owner)
+            task.save()
         except User.DoesNotExist:
-            messages.error(request,"Owner was not updated: No such user!")
+            messages.error(request, "Owner was not updated: No such user!")
 
 
 def add_note_submit(request, ipk):
