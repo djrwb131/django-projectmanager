@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from enum import Enum
 
 from django.db.models import F
+from django.urls import reverse
 
 
 class StatusModel(models.Model):
@@ -13,27 +14,25 @@ class StatusModel(models.Model):
         return self.title
 
 
-# TODO: This seems like an ok way to deal with the default issue. Is there a better way though?
-try:
-    STATUS_DEFAULT = StatusModel.objects.get(progress_id=0)
-except StatusModel.DoesNotExist:
-    a = StatusModel()
-    a.title = "Default!!"
-    a.progress_id = 0
-    a.save()
+
 
 
 class TaskModel(models.Model):
-    status = models.ForeignKey(StatusModel, on_delete=models.PROTECT, default=STATUS_DEFAULT)
+    # It's very difficult to set a default here - it'll have to be dealt with as soon as the null
+    # is detected somewhere else (like the form, maybe)
+    status = models.ForeignKey(StatusModel, on_delete=models.PROTECT, null=True)
     title = models.CharField(max_length=80)
     desc = models.TextField()
-    priority = models.IntegerField()
+    priority = models.IntegerField(default=1000)
     scheduled_start = models.DateTimeField(blank=True, null=True)
     started_on = models.DateTimeField(blank=True, null=True)
     deadline = models.DateTimeField(blank=True, null=True)
     completed_on = models.DateTimeField(blank=True, null=True)
     owner = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
-    parent_task = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
+    parent_task = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)
+
+    def get_absolute_url(self):
+        return reverse("project_manager:details", args=[self.pk])
 
     def _retrieve_tasks_by_nearest_deadline(self):
         return self.objects.filter(status__progress_id__lt=80).order_by(
@@ -52,9 +51,9 @@ class TaskModel(models.Model):
         )
 
     def get_most_pressing(self):
-        ret = self._retrieve_tasks_by_nearest_deadline()
+        ret = self._retrieve_tasks_by_nearest_deadline(self)
         if len(ret) < 1:
-            ret = self._retrieve_tasks_that_need_polish()
+            ret = self._retrieve_tasks_that_need_polish(self)
         else:
             return ret[0]
         if len(ret) < 2:
@@ -63,9 +62,9 @@ class TaskModel(models.Model):
             return ret[1]
 
     def get_highest_priority(self):
-        ret = self._retrieve_tasks_by_highest_priority()
+        ret = self._retrieve_tasks_by_highest_priority(self)
         if len(ret) < 1:
-            ret = self._retrieve_tasks_that_need_polish()
+            ret = self._retrieve_tasks_that_need_polish(self)
         else:
             return ret[0]
         if len(ret) < 3:
@@ -74,9 +73,9 @@ class TaskModel(models.Model):
             return ret[2]
 
     def get_needs_polish(self):
-        ret = self._retrieve_tasks_that_need_polish()
+        ret = self._retrieve_tasks_that_need_polish(self)
         if len(ret) < 1:
-            ret = self._retrieve_tasks_by_nearest_deadline()
+            ret = self._retrieve_tasks_by_nearest_deadline(self)
         else:
             return ret[0]
         if len(ret) < 3:
