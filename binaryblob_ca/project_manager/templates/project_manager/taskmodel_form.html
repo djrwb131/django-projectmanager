@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="{% static 'project_manager/stylesheet.css' %}">
+    <meta charset="UTF-8">
+    <title>Edit task</title>
+
+</head>
+<body>
+<div class="details_container">
+    <form class="details_form" action="{% url 'project_manager:add_task_submit' %}" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Add Task">
+    </form>
+</div>
+</body>
+</html>

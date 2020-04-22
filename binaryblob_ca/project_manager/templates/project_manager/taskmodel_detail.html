@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{object.title}}</title>
+</head>
+<body>
+    <a href="{% url 'project_manager:edit_task' object.pk %}">Edit this task</a><br/>
+    <h1>{{ object.title }}</h1>
+    <p>Owner: {{ object.owner }}</p>
+    <p>Status: {{ object.status }}</p>
+    <p><pre>{{ object.desc }}</pre></p>
+    <p>Scheduled to start on: {{ object.scheduled_start }}</p>
+    <p>Started on: {{ object.started_on|default_if_none:"Not started yet" }}</p>
+    <p>Deadline: {{ object.deadline }}</p>
+    <p>Finished on: {{ object.completed_on|default_if_none:"In progress..." }}</p>
+    <p>
+        Parent task: {% if object.parent_task %}{{object.parent_task.title}}{% else %} None - this is a root task{% endif %}<br/>
+        Dependencies: <ul><br/>
+        {% for entry in object.task_queried.all %}
+        <li>{{ entry.depends_on.title }}</li>
+        {% endfor %}
+    </ul>
+    </p>
+</body>
+</html>
