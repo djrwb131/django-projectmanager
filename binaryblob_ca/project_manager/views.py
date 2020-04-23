@@ -5,9 +5,9 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import Q
 from django.views import generic
 
-from .forms import AddTaskForm
-from .models import TaskModel, StatusModel, TaskNoteModel, EventModel, TaskDependencyModel, TaskPermissionModel, \
-    Permissions
+from .forms import AddTaskForm, EditTaskForm
+from .models import TaskModel, TaskNoteModel
+from .view_funcs import log_new_task, log_changed_fields
 
 
 class IndexView(generic.ListView):
@@ -61,39 +61,56 @@ class AddTaskView(PermissionRequiredMixin, generic.CreateView):
     permission_required = 'project_manager.add_taskmodel'
     form_class = AddTaskForm
     model = TaskModel
+
     # url = reverse("project_manager:index")
 
     def __init__(self):
         super().__init__()
         self.object = self.model()
+        self.user = None
+
+    def setup(self, request, *args, **kwargs):
+        self.user = request.user
+        return super().setup(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['edit_mode'] = "add"
         return ctx
 
-    def post(self, request, *args, **kwargs):
-        resp = super().post(request, *args, **kwargs)
-        log_new_task(request, self.object)
+    def form_valid(self, form):
+        resp = super().form_valid(form)
+        log_new_task(self.user, self.object)
+        messages.success(self.request, "Task added successfully.")
         return resp
 
 
 class EditTaskView(PermissionRequiredMixin, generic.edit.UpdateView):
     permission_required = 'project_manager.update_taskmodel'
-    fields = [x.name for x in TaskModel._meta.fields]
+    form_class = EditTaskForm
     model = TaskModel
     notes_model = TaskNoteModel
 
-    def post(self, request, *args, **kwargs):
-        s = super().post(request,*args,**kwargs)
-        messages.success(request, 'Updated successfully.')
-        return s
+    def __init__(self):
+        super().__init__()
+        self.user = None
+
+    def setup(self, request, *args, **kwargs):
+        self.user = request.user
+        return super().setup(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        changed_fields = []
+        if form.has_changed():
+            for f in form.changed_data:
+                changed_fields.append((f, form.initial[f], form.cleaned_data[f]))
+        resp = super().form_valid(form)
+        log_changed_fields(self.user, self.object, changed_fields)
+        messages.success(self.request, "Edit was successful.")
+        return resp
 
     def get_context_data(self, **kwargs):
-        print(self.fields)
         ctx = super().get_context_data(**kwargs)
         ctx['edit_mode'] = "edit"
         ctx['notes'] = self.notes_model.objects.filter(task=self.object)
         return ctx
-
-
