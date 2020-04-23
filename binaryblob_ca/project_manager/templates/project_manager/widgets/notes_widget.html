@@ -1,0 +1,9 @@
+<div class="notes_widget_container">
+    {% for note in notes %}
+    <div class="note_entry">
+        <h3>From {{note.owner}} on {{note.date}}:</h3>
+        <pre>{{ note.text }}
+        </pre>
+    </div>
+    {% endfor %}
+</div>
