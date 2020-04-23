@@ -3,24 +3,28 @@
 {% block title %}Editing: {{object.title}}{% endblock %}
 
 {% block content %}
-<div class="details_container">
+<div class="taskmodel_detail_container">
+    <p>
     <a href="{% url 'project_manager:edit_task' object.pk %}">Edit this task</a>
     <a href="{% url 'project_manager:index' %}">Back to index</a><br/>
-    <h1>{{ object.title }}</h1>
-    <p>Owner: {{ object.owner }}</p>
-    <p>Status: {{ object.status }}</p>
-    <p><pre>{{ object.desc }}</pre></p>
-    <p>Scheduled to start on: {{ object.scheduled_start }}</p>
-    <p>Started on: {{ object.started_on|default_if_none:"Not started yet" }}</p>
-    <p>Deadline: {{ object.deadline }}</p>
-    <p>Finished on: {{ object.completed_on|default_if_none:"In progress..." }}</p>
-    <p>
-        Parent task: {% if object.parent_task %}{{object.parent_task.title}}{% else %} None - this is a root task{% endif %}<br/>
-        Dependencies: <ul><br/>
+    </p>
+    <h3>{{ object.title }}</h3>
+    <div class="detail_line" name="owner">Owner: {{ object.owner }}</div>
+    <div class="detail_line" name="status">Status: {{ object.status }}</div>
+    <div class="detail_line" name="desc"><pre>{{ object.desc }}</pre></div>
+    <div class="detail_line" name="scheduled_start">Scheduled to start on: {{ object.scheduled_start }}</div>
+    <div class="detail_line" name="started_on">Started on: {{ object.started_on|default_if_none:"Not started yet" }}</div>
+    <div class="detail_line" name="deadline">Deadline: {{ object.deadline }}</div>
+    <div class="detail_line" name="completed_on">Finished on: {{ object.completed_on|default_if_none:"In progress..." }}</div>
+    <div class="detail_line" name="parent_task">Parent task: {% if object.parent_task %} {{object.parent_task.title}} {% else %} None - this is a root task {% endif %}</div>
+    <div class="detail_line" name="depends_on">
+        Dependencies:
+        {% if object.task_queried.all %} <ul><br/>
         {% for entry in object.task_queried.all %}
         <li>{{ entry.depends_on.title }}</li>
         {% endfor %}
-    </ul>
-    </p>
+        </ul>{% endif %}
+    </div>
 </div>
+{% include 'project_manager/widgets/notes_widget.html' %}
 {% endblock %}
