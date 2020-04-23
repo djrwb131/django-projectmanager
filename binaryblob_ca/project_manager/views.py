@@ -24,17 +24,23 @@ class IndexView(generic.ListView):
         return super().setup(request, *args, **kwargs)
 
     def get_queryset(self):
-        return self.model.objects.filter(Q(owner=self.user) | Q(owner=None))
+        if not self.queryset:
+            if self.user.is_anonymous:
+                self.queryset = self.model.objects.filter(Q(owner=None))
+            else:
+                self.queryset = self.model.objects.filter(Q(owner=self.user) | Q(owner=None))
+        return self.queryset
 
     def get_context_data(self, **kwargs):
+        qs = self.get_queryset()
         ctx = super().get_context_data(**kwargs)
 
         # I've no idea. Don't ask, it just works.
-        ctx['most_pressing'] = self.model.get_most_pressing(self.model)
-        ctx['highest_priority'] = self.model.get_highest_priority(self.model)
-        ctx['needs_polish'] = self.model.get_needs_polish(self.model)
-        ctx['incomplete_tasks'] = self.model.get_incomplete_tasks(self.model)
-        ctx['complete_tasks'] = self.model.get_complete_tasks(self.model)
+        ctx['most_pressing'] = self.model.get_most_pressing(self.model, qs)
+        ctx['highest_priority'] = self.model.get_highest_priority(self.model, qs)
+        ctx['needs_polish'] = self.model.get_needs_polish(self.model, qs)
+        ctx['incomplete_tasks'] = self.model.get_incomplete_tasks(self.model, qs)
+        ctx['complete_tasks'] = self.model.get_complete_tasks(self.model, qs)
 
         return ctx
 

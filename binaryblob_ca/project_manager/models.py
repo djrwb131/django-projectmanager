@@ -14,9 +14,6 @@ class StatusModel(models.Model):
         return self.title
 
 
-
-
-
 class TaskModel(models.Model):
     # It's very difficult to set a default here - it'll have to be dealt with as soon as the null
     # is detected somewhere else (like the form, maybe)
@@ -34,26 +31,36 @@ class TaskModel(models.Model):
     def get_absolute_url(self):
         return reverse("project_manager:details", args=[self.pk])
 
-    def _retrieve_tasks_by_nearest_deadline(self):
-        return self.objects.filter(status__progress_id__lt=80).order_by(
+    def _retrieve_tasks_by_nearest_deadline(self, qs=None):
+        if not qs:
+            qs = self.objects.all()
+        return qs.filter(status__progress_id__lt=80).order_by(
             F('deadline').asc(nulls_last=True)
         )
 
-    def _retrieve_tasks_by_highest_priority(self):
-        return self.objects.filter(status__progress_id__lt=80).order_by(
+    def _retrieve_tasks_by_highest_priority(self, qs=None):
+        if not qs:
+            qs = self.objects.all()
+        return qs.filter(status__progress_id__lt=80).order_by(
             'priority',
             F('deadline').asc(nulls_last=True)
         )
 
-    def _retrieve_tasks_that_need_polish(self):
-        return self.objects.filter(status__progress_id__exact=80).order_by(
+    def _retrieve_tasks_that_need_polish(self, qs=None):
+        if not qs:
+            qs = self.objects.all()
+        return qs.filter(status__progress_id__exact=80).order_by(
             'priority'
         )
 
-    def get_most_pressing(self):
-        ret = self._retrieve_tasks_by_nearest_deadline(self)
+    # still have to pass self if being called from an assigned-class variable
+    # I.E. variable = Class; variable.func(); does not work
+    # must do variable = Class(); or variable.func(variable)
+    # because there is no such thing as static members, functions or otherwise.
+    def get_most_pressing(self, qs=None):
+        ret = self._retrieve_tasks_by_nearest_deadline(self, qs)
         if len(ret) < 1:
-            ret = self._retrieve_tasks_that_need_polish(self)
+            ret = self._retrieve_tasks_that_need_polish(self, qs)
         else:
             return ret[0]
         if len(ret) < 2:
@@ -61,10 +68,10 @@ class TaskModel(models.Model):
         else:
             return ret[1]
 
-    def get_highest_priority(self):
-        ret = self._retrieve_tasks_by_highest_priority(self)
+    def get_highest_priority(self, qs=None):
+        ret = self._retrieve_tasks_by_highest_priority(self, qs)
         if len(ret) < 1:
-            ret = self._retrieve_tasks_that_need_polish(self)
+            ret = self._retrieve_tasks_that_need_polish(self, qs)
         else:
             return ret[0]
         if len(ret) < 3:
@@ -72,23 +79,27 @@ class TaskModel(models.Model):
         else:
             return ret[2]
 
-    def get_needs_polish(self):
-        ret = self._retrieve_tasks_that_need_polish(self)
+    def get_needs_polish(self, qs=None):
+        ret = self._retrieve_tasks_that_need_polish(self, qs)
         if len(ret) < 1:
-            ret = self._retrieve_tasks_by_nearest_deadline(self)
+            ret = self._retrieve_tasks_by_nearest_deadline(self, qs)
         else:
             return ret[0]
         if len(ret) < 3:
             return None  # Nice. Have a KitKat.
         return ret[2]
 
-    def get_incomplete_tasks(self):
-        return self.objects.filter(
+    def get_incomplete_tasks(self, qs=None):
+        if not qs:
+            qs = self.objects.all()
+        return qs.filter(
             status__progress_id__lt=100
         ).order_by(F('deadline').asc(nulls_last=True))
 
-    def get_complete_tasks(self):
-        return self.objects.filter(
+    def get_complete_tasks(self, qs=None):
+        if not qs:
+            qs = self.objects.all()
+        return qs.filter(
             status__progress_id__exact=100
         ).order_by('priority')
 
