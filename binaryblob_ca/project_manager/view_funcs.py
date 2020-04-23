@@ -1,4 +1,9 @@
 # Non class-based views, and their supporting functions
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.utils.timezone import now
+
+from .models import EventModel, TaskModel, StatusModel, TaskNoteModel
 
 
 def log_event(obj, owner, field, old_value, new_value):
@@ -16,21 +21,21 @@ def log_event(obj, owner, field, old_value, new_value):
     event.save()
 
 
-def log_event_post(request, obj, field, req_field):
-    log_event(obj, request.user, field, obj.__dict__[field], request.POST[req_field])
+def log_event_post(user, obj, field, req_field):
+    log_event(obj, user, field, obj.__dict__[field], request.POST[req_field])
 
 
-def log_status_update(request, task, status):
-    log_event(task, request.user, "status", task.status, status)
+def log_status_update(user, task, status):
+    log_event(task, user, "status", task.status, status)
 
 
-def log_changed_fields(request, obj, changed_fields):
+def log_changed_fields(user, obj, changed_fields):
     for f in changed_fields:
-        log_event(obj, request.user, f[0], f[1], f[2])
+        log_event(obj, user, f[0], f[1], f[2])
 
 
-def log_new_task(request, task):
-    log_event(task, request.user, "", "", "Created object")
+def log_new_task(user, task):
+    log_event(task, user, "", "", "Created object")
 
 
 def update_task_status(request, pk):
@@ -44,7 +49,7 @@ def update_task_status(request, pk):
 
     next_status = StatusModel.objects.filter(progress_id__gt=current.progress_id).order_by('progress_id')
     if next_status:
-        log_status_update(request, task, next_status[0])
+        log_status_update(request.user, task, next_status[0])
         task.status = next_status[0]
         task.save()
     return HttpResponseRedirect(reverse('project_manager:index'))
@@ -58,7 +63,7 @@ def rollback_task_status(request, pk):
         log_event(task, request.user, "started_on", task.started_on, None)
         task.started_on = None
     if last:
-        log_status_update(request, task, last)
+        log_status_update(request.user, task, last)
         task.status = last
         task.save()
     return HttpResponseRedirect(reverse('project_manager:index'))
