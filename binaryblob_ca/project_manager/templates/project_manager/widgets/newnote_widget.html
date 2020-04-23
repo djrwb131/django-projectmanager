@@ -1,0 +1,10 @@
+<div class="newnote_widget_container">
+    <form class="newnote_form" action="{% url 'project_manager:add_note' object.pk %}" method="post">
+        {% csrf_token %}
+        <fieldset>
+            <label for="task_note">Add a note here:</label><br/>
+            <textarea name="task_note"></textarea>
+        </fieldset>
+        <input type="submit" value="Add note">
+    </form>
+</div>
