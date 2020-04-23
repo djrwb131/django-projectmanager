@@ -11,21 +11,21 @@
     {% endif %}
     <br/>
     <div class="notable_tasks">
-        <div class="most_pressing" onclick="window.location.href = '{% url 'project_manager:details' most_pressing.pk %}'">
+        <div class="task_widget_container" name="most_pressing" onclick="window.location.href = '{% url 'project_manager:details' most_pressing.pk %}'">
             Most pressing:
-            {% include "project_manager/task_widget.html" with task=most_pressing %}
+            {% include "project_manager/widgets/task_widget.html" with task=most_pressing %}
         </div>
-        <div class="highest_priority" onclick="window.location.href = '{% url 'project_manager:details' highest_priority.pk %}'">
+        <div class="task_widget_container" name="highest_priority" onclick="window.location.href = '{% url 'project_manager:details' highest_priority.pk %}'">
             Highest priority:
-            {% include "project_manager/task_widget.html" with task=highest_priority %}
+            {% include "project_manager/widgets/task_widget.html" with task=highest_priority %}
         </div>
-        <div class="needs_polish"  onclick="window.location.href = '{% url 'project_manager:details' needs_polish.pk %}'">
+        <div class="task_widget_container" name="needs_polish"  onclick="window.location.href = '{% url 'project_manager:details' needs_polish.pk %}'">
             Needs polish:
-            {% include "project_manager/task_widget.html" with task=needs_polish %}
+            {% include "project_manager/widgets/task_widget.html" with task=needs_polish %}
         </div>
     </div>
     <div class="all_tasks">
-        <table class="table-fill" border="1px">
+        <table class="all_tasks_table">
             <tr>
                 <th colspan="5">Available Tasks</th>
             </tr>
@@ -36,6 +36,7 @@
                 <th width="auto">Owner</th>
                 <th width="auto">Status</th>
             </tr>
+            {% if incomplete_tasks %}
             {% for task in incomplete_tasks %}
             <tr onclick="window.location.href = '{% url 'project_manager:details' task.pk %}'">
                 <td>{{ task.title }}</td>
@@ -49,35 +50,34 @@
                 <td>{{ task.status }}</td>
                 {% endif %}
             </tr>
-
             {% endfor %}
-        </table>
-    </div>
-    <br/>
-    <div class="all_tasks">
-        <table class="table-fill" border="1px">
-            <tr>
-                <th colspan="4">Completed Tasks</th>
-            </tr>
-        <tr>
-            <th width="50%">Title</th>
-            <th width="auto">Priority</th>
-            <th width="auto">Deadline</th>
-            <th width="auto">Status</th>
-        </tr>
-        {% for task in complete_tasks %}
-        <tr onclick="window.location.href = '{% url 'project_manager:details' task.pk %}'">
-            <td>{{ task.title }}</td>
-            <td>{{ task.priority }}</td>
-            <td>{{ task.deadline }}</td>
-            {% if perms.project_manager.update_task_status %}
-            <td>{{ task.status }} <a href="{% url 'project_manager:update_status' task.pk %}">[Update]</a>
-                <a href="{% url 'project_manager:rollback_status' task.pk %}">[Rollback]</a></td>
-            {% else %}
-            <td>{{ task.status }}</td>
             {% endif %}
-        </tr>
-        {% endfor %}
+            <tr>
+                <th colspan="5">Completed tasks</th>
+            </tr>
+            <tr>
+                <th width="45%">Title</th>
+                <th width="auto">Priority</th>
+                <th width="auto">Deadline</th>
+                <th width="auto">Owner</th>
+                <th width="auto">Status</th>
+            </tr>
+            {% if complete_tasks %}
+            {% for task in complete_tasks %}
+            <tr onclick="window.location.href = '{% url 'project_manager:details' task.pk %}'">
+                <td>{{ task.title }}</td>
+                <td>{{ task.priority }}</td>
+                <td>{{ task.deadline }}</td>
+                <td>{{ task.owner }}</td>
+                {% if perms.project_manager.update_task_status %}
+                <td>{{ task.status }} <a href="{% url 'project_manager:update_status' task.pk %}">[Update]</a>
+                    <a href="{% url 'project_manager:rollback_status' task.pk %}">[Rollback]</a></td>
+                {% else %}
+                <td>{{ task.status }}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+            {% endif %}
         </table>
     </div>
 {% endblock %}
