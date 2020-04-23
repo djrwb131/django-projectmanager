@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{%block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'project_manager/stylesheet.css' %}">
+</head>
+<body>
+<div class="main_container">
+{% block content %}{% endblock %}
+</div>
+</body>
+</html>

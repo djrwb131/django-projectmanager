@@ -1,12 +1,11 @@
-<!DOCTYPE html>
-{% load static %}
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{object.title}}</title>
-</head>
-<body>
-    <a href="{% url 'project_manager:edit_task' object.pk %}">Edit this task</a><br/>
+{% extends "project_manager/base.html" %}
+
+{% block title %}Editing: {{object.title}}{% endblock %}
+
+{% block content %}
+<div class="details_container">
+    <a href="{% url 'project_manager:edit_task' object.pk %}">Edit this task</a>
+    <a href="{% url 'project_manager:index' %}">Back to index</a><br/>
     <h1>{{ object.title }}</h1>
     <p>Owner: {{ object.owner }}</p>
     <p>Status: {{ object.status }}</p>
@@ -23,5 +22,5 @@
         {% endfor %}
     </ul>
     </p>
-</body>
-</html>
+</div>
+{% endblock %}

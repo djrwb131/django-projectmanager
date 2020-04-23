@@ -73,8 +73,6 @@ class AddTaskView(PermissionRequiredMixin, generic.CreateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['disabled'] = ""
-        ctx['all_tasks'] = self.model.objects.all()
         ctx['edit_mode'] = "add"
         return ctx
 
@@ -94,11 +92,16 @@ class EditTaskView(PermissionRequiredMixin, generic.edit.UpdateView):
     fields = [x.name for x in TaskModel._meta.fields]
     model = TaskModel
     notes_model = TaskNoteModel
-    template_name_suffix = "_update_form"
+
+    def post(self, request, *args, **kwargs):
+        s = super().post(request,*args,**kwargs)
+        messages.success(request, 'Updated successfully.')
+        return s
 
     def get_context_data(self, **kwargs):
         print(self.fields)
         ctx = super().get_context_data(**kwargs)
+        ctx['edit_mode'] = "edit"
         ctx['notes'] = self.notes_model.objects.filter(task=self.object)
         return ctx
 
@@ -135,9 +138,9 @@ def log_new_task(request, task):
     log_event(task, request.user, "", "", "Created object")
 
 
-def update_task_status(request, ipk):
-    task = TaskModel.objects.get(pk=ipk)
-    current = TaskModel.objects.get(pk=ipk).status
+def update_task_status(request, pk):
+    task = TaskModel.objects.get(pk=pk)
+    current = TaskModel.objects.get(pk=pk).status
 
     if current.progress_id == 0:
         s = now()
@@ -152,9 +155,9 @@ def update_task_status(request, ipk):
     return HttpResponseRedirect(reverse('project_manager:index'))
 
 
-def rollback_task_status(request, ipk):
-    task = TaskModel.objects.get(pk=ipk)
-    current = TaskModel.objects.get(pk=ipk).status
+def rollback_task_status(request, pk):
+    task = TaskModel.objects.get(pk=pk)
+    current = TaskModel.objects.get(pk=pk).status
     last = StatusModel.objects.filter(progress_id__lt=current.progress_id).order_by(F('progress_id').desc())[0]
     if last.progress_id == 0:
         log_event(task, request.user, "started_on", task.started_on, None)
@@ -166,83 +169,12 @@ def rollback_task_status(request, ipk):
     return HttpResponseRedirect(reverse('project_manager:index'))
 
 
-
-
-
-def edit_task_submit(request, ipk):
-    task = TaskModel.objects.get(pk=ipk)
-    update_task(task, request)
-    messages.success(request, 'Updated successfully.')
-    return HttpResponseRedirect(reverse('project_manager:details', args=[ipk]))
-
-
-def update_task(task, request):
-    post_fields = (
-        'task_status',
-        'task_title',
-        'task_desc',
-        'task_priority',
-    )
-    # these fields make errors if they're blank and not null...
-    datetime_fields = (
-        'task_scheduled_start',
-        'task_started_on',
-        'task_deadline',
-        'task_completed_on',
-    )
-    changed_fields = []
-    for field in post_fields:
-        if field in request.POST:
-            if not task.__dict__[field[5:]] == request.POST[field]:
-                changed_fields.append((field[5:], task.__dict__[field[5:]], request.POST[field],))
-                task.__dict__[field[5:]] = request.POST[field]
-    for field in datetime_fields:
-        if field in request.POST and not request.POST[field] == '':
-            if not task.__dict__[field[5:]] == request.POST[field]:
-                changed_fields.append((field, task.__dict__[field[5:]], request.POST[field],))
-                task.__dict__[field[5:]] = request.POST[field]
-    next_status = None
-    if task.status is None:
-        next_status = StatusModel.objects.get(progress_id=0)
-        task.status = next_status
-    log_changed_fields(request, task, changed_fields)
-    if next_status:
-        log_status_update(request, task, next_status)
-    parent_task = request.POST.get("task_parent", None)
-    if parent_task:
-        log_event(task, request.user, "parent_task", task.parent_task, parent_task)
-        task.parent_task = TaskModel.objects.get(pk=parent_task)
-    task.save()
-
-    # TODO: task dependencies can only be added or removed one at a time...
-    cur_deps = TaskDependencyModel.objects.filter(task=task)
-    task_dep_add = request.POST.get('task_deps', None)
-    task_dep_remove = request.POST.get('task_deps_remove', None)
-    task_new_owner = request.POST.get('task_owner', None)
-    if task_dep_remove:
-        cur_deps.filter(depends_on=dep_tasks).delete()
-        cur_deps.save()
-    if task_dep_add:
-        b = TaskDependencyModel()
-        b.task = task
-        b.depends_on = TaskModel.objects.get(pk=task_dep_add)
-        b.save()
-    if task_new_owner:
-        try:
-            a = task.owner
-            task.owner = User.objects.get(username=task_new_owner)
-            log_event(task, request.user, "owner", a, task_new_owner)
-            task.save()
-        except User.DoesNotExist:
-            messages.error(request, "Owner was not updated: No such user!")
-
-
-def add_note_submit(request, ipk):
+def add_note_submit(request, pk):
     note = TaskNoteModel()
-    note.task = TaskModel.objects.get(pk=ipk)
+    note.task = TaskModel.objects.get(pk=pk)
     note.date = now()
     note.text = request.POST['task_note']
     note.owner = request.user
     note.save()
 
-    return HttpResponseRedirect(reverse('project_manager:details', args=[ipk]))
+    return HttpResponseRedirect(reverse('project_manager:details', args=[pk]))

@@ -1,19 +1,44 @@
-<!DOCTYPE html>
-{% load static %}
-<html lang="en">
-<head>
-    <link rel="stylesheet" type="text/css" href="{% static 'project_manager/stylesheet.css' %}">
-    <meta charset="UTF-8">
-    <title>Edit task</title>
+{% extends 'project_manager/base.html' %}
 
-</head>
-<body>
+{% block title %}Edit task{% endblock %}
+
+{% block content %}
 <div class="details_container">
-    <form class="details_form" action="{% url 'project_manager:add_task_submit' %}" method="post">
+    <form class="details_form" method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Add Task">
+        {{ form }}
+
+        {% if edit_mode == "add" %}
+            <input type="submit" value="Add Task">
+            <button type="button" onclick="window.location.href='{% url 'project_manager:index' %}'">Cancel</button>
+        {% else %}
+            <input type="submit" value="Submit Edit">
+            <button type="button" onclick="window.location.href='{% url 'project_manager:details' object.pk %}'">Cancel</button>
+        {% endif %}
     </form>
 </div>
-</body>
-</html>
+
+{% if notes %}
+<div class="details_container">
+    {% for note in notes %}
+    <p>From {{note.owner}} on {{note.date}}:<br>
+    <pre>{{ note.text }}</pre>
+    <br>
+    </p>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if edit_mode == "edit" %}
+<div class="details_container">
+    <form class="details_form" action="{% url 'project_manager:add_note' object.pk %}" method="post">
+        {% csrf_token %}
+        <fieldset>
+            <label for="task_note">Add a note here:</label>
+            <textarea style="width:600px;height:300px;" name="task_note"></textarea>
+        </fieldset>
+        <input type="submit" value="Add note">
+    </form>
+</div>
+{% endif %}
+{% endblock %}
