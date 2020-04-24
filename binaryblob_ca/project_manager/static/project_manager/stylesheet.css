@@ -198,4 +198,23 @@ td {
 	resize: none;
 	border: none;
 }
+.newnote_widget_container {
+	height: 200px;
+	width: 100%;
+	border: none;
+	display: grid;
+	grid-template-rows: 20px auto 25px;
+}
 
+.newnote_form {
+	background: inherit;
+	color: inherit;
+}
+.newnote_widget_textarea {
+	width: 100%;
+	height: 100%;
+	resize: none;
+}
+.newnote_widget_buttons {
+	margin-top: 5px;
+}
