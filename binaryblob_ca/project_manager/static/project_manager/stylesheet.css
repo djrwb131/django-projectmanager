@@ -62,9 +62,7 @@ pre {
 	word-wrap: break-word;
 }
 
-table {
-	width: 100%;
-}
+
 a {
 	background: inherit;
 }
@@ -135,8 +133,17 @@ td {
 	background: var(--task_widget-bg-title);
 }
 
-.all_tasks, .taskmodel_form  {
+.all_tasks, .taskmodel_form, .all_tasks table, .taskmodel_form table  {
 	width: 100%;
+}
+.login_table tr{
+	background: var(--color-dark2);
+}
+.login_table tr:nth-child(odd){
+	background: var(--color-dark3);
+}
+.login_table td, .login_table label{
+	background: inherit;
 }
 .all_tasks th, .taskmodel_form th {
 	background: var(--table-th-bg-color);
