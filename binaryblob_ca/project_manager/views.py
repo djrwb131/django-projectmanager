@@ -1,7 +1,7 @@
 # Class-based views
 
 from django.contrib import messages
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.db.models import Q
 from django.views import generic
 
@@ -10,7 +10,7 @@ from .models import TaskModel, TaskNoteModel
 from .view_funcs import log_new_task, log_changed_fields
 
 
-class IndexView(generic.ListView):
+class IndexView(LoginRequiredMixin, generic.ListView):
     template_name = "project_manager/index.html"
     model = TaskModel
     allow_empty = True
@@ -25,10 +25,7 @@ class IndexView(generic.ListView):
 
     def get_queryset(self):
         if not self.queryset:
-            if self.user.is_anonymous:
-                self.queryset = self.model.objects.filter(Q(owner=None))
-            else:
-                self.queryset = self.model.objects.filter(Q(owner=self.user) | Q(owner=None))
+            self.queryset = self.model.objects.filter(Q(owner=self.user) | Q(owner=None))
         return self.queryset
 
     def get_context_data(self, **kwargs):
