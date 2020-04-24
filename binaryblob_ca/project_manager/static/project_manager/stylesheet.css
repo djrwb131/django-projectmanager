@@ -52,7 +52,9 @@
     background-color: var(--main-bg-color);
 	color: var(--main-fg-color);
 }
-
+label {
+	background: inherit;
+}
 pre {
 	overflow-x: auto;
 	white-space: pre-wrap;

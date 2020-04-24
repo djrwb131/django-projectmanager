@@ -28,6 +28,8 @@ class DateTimeLocalField(DateTimeField):
     supports_microseconds = False
 
     def clean(self, value):
+        if len(value) == 0:
+            return None
         return value.replace("T", " ")
 
 
