@@ -17,7 +17,9 @@ class StatusModel(models.Model):
 class TaskModel(models.Model):
     # It's very difficult to set a default here - it'll have to be dealt with as soon as the null
     # is detected somewhere else (like the form, maybe)
-    status = models.ForeignKey(StatusModel, on_delete=models.PROTECT, null=True)
+    #
+    # Here's a simple, inelegant fix: "Just use the first one! I hope nothing changes, ever!"
+    status = models.ForeignKey(StatusModel, on_delete=models.PROTECT, default=1)
     title = models.CharField(max_length=80)
     desc = models.TextField()
     priority = models.IntegerField(default=1000)
@@ -31,36 +33,36 @@ class TaskModel(models.Model):
     def get_absolute_url(self):
         return reverse("project_manager:details", args=[self.pk])
 
-    def _retrieve_tasks_by_nearest_deadline(self, qs=None):
+    @staticmethod
+    def _retrieve_tasks_by_nearest_deadline(qs=None):
         if not qs:
-            qs = self.objects.all()
+            qs = TaskModel.objects.all()
         return qs.filter(status__progress_id__lt=80).order_by(
             F('deadline').asc(nulls_last=True)
         )
 
-    def _retrieve_tasks_by_highest_priority(self, qs=None):
+    @staticmethod
+    def _retrieve_tasks_by_highest_priority(qs=None):
         if not qs:
-            qs = self.objects.all()
+            qs = TaskModel.objects.all()
         return qs.filter(status__progress_id__lt=80).order_by(
             'priority',
             F('deadline').asc(nulls_last=True)
         )
 
-    def _retrieve_tasks_that_need_polish(self, qs=None):
+    @staticmethod
+    def _retrieve_tasks_that_need_polish(qs=None):
         if not qs:
-            qs = self.objects.all()
+            qs = TaskModel.objects.all()
         return qs.filter(status__progress_id__exact=80).order_by(
             'priority'
         )
 
-    # still have to pass self if being called from an assigned-class variable
-    # I.E. variable = Class; variable.func(); does not work
-    # must do variable = Class(); or variable.func(variable)
-    # because there is no such thing as static members, functions or otherwise.
-    def get_most_pressing(self, qs=None):
-        ret = self._retrieve_tasks_by_nearest_deadline(self, qs)
+    @staticmethod
+    def get_most_pressing(qs=None):
+        ret = TaskModel._retrieve_tasks_by_nearest_deadline(qs)
         if len(ret) < 1:
-            ret = self._retrieve_tasks_that_need_polish(self, qs)
+            ret = TaskModel._retrieve_tasks_that_need_polish(qs)
         else:
             return ret[0]
         if len(ret) < 2:
@@ -68,10 +70,11 @@ class TaskModel(models.Model):
         else:
             return ret[1]
 
-    def get_highest_priority(self, qs=None):
-        ret = self._retrieve_tasks_by_highest_priority(self, qs)
+    @staticmethod
+    def get_highest_priority(qs=None):
+        ret = TaskModel._retrieve_tasks_by_highest_priority(qs)
         if len(ret) < 1:
-            ret = self._retrieve_tasks_that_need_polish(self, qs)
+            ret = TaskModel._retrieve_tasks_that_need_polish(qs)
         else:
             return ret[0]
         if len(ret) < 3:
@@ -79,29 +82,32 @@ class TaskModel(models.Model):
         else:
             return ret[2]
 
-    def get_needs_polish(self, qs=None):
-        ret = self._retrieve_tasks_that_need_polish(self, qs)
+    @staticmethod
+    def get_needs_polish(qs=None):
+        ret = TaskModel._retrieve_tasks_that_need_polish(qs)
         if len(ret) < 1:
-            ret = self._retrieve_tasks_by_nearest_deadline(self, qs)
+            ret = TaskModel._retrieve_tasks_by_nearest_deadline(qs)
         else:
             return ret[0]
         if len(ret) < 3:
             return None  # Nice. Have a KitKat.
         return ret[2]
 
-    def get_incomplete_tasks(self, qs=None):
+    @staticmethod
+    def get_incomplete_tasks(qs=None):
         if not qs:
-            qs = self.objects.all()
+            qs = TaskModel.objects.all()
         return qs.filter(
             status__progress_id__lt=100
-        ).order_by(F('deadline').asc(nulls_last=True))
+        ).order_by('parent_task', F('deadline').asc(nulls_last=True),'priority')
 
-    def get_complete_tasks(self, qs=None):
+    @staticmethod
+    def get_complete_tasks(qs=None):
         if not qs:
-            qs = self.objects.all()
+            qs = TaskModel.objects.all()
         return qs.filter(
             status__progress_id__exact=100
-        ).order_by('priority')
+        ).order_by('parent_task','priority')
 
     def __str__(self):
         return self.title
