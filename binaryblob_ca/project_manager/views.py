@@ -33,11 +33,11 @@ class IndexView(LoginRequiredMixin, generic.ListView):
         ctx = super().get_context_data(**kwargs)
 
         # I've no idea. Don't ask, it just works.
-        ctx['most_pressing'] = self.model.get_most_pressing(self.model, qs)
-        ctx['highest_priority'] = self.model.get_highest_priority(self.model, qs)
-        ctx['needs_polish'] = self.model.get_needs_polish(self.model, qs)
-        ctx['incomplete_tasks'] = self.model.get_incomplete_tasks(self.model, qs)
-        ctx['complete_tasks'] = self.model.get_complete_tasks(self.model, qs)
+        ctx['most_pressing'] = self.model.get_most_pressing(qs)
+        ctx['highest_priority'] = self.model.get_highest_priority(qs)
+        ctx['needs_polish'] = self.model.get_needs_polish(qs)
+        ctx['incomplete_tasks'] = self.model.get_incomplete_tasks(qs)
+        ctx['complete_tasks'] = self.model.get_complete_tasks(qs)
 
         return ctx
 
