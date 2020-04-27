@@ -27,10 +27,11 @@
     <div class="all_tasks">
         <table class="all_tasks_table">
             <tr>
-                <th colspan="5">Available Tasks</th>
+                <th colspan="6">Available Tasks</th>
             </tr>
             <tr>
-                <th width="45%">Title</th>
+                <th width="30%">Parent</th>
+                <th width="30%">Title</th>
                 <th width="auto">Priority</th>
                 <th width="auto">Deadline</th>
                 <th width="auto">Owner</th>
@@ -39,6 +40,7 @@
             {% if incomplete_tasks %}
             {% for task in incomplete_tasks %}
             <tr onclick="window.location.href = '{% url 'project_manager:details' task.pk %}'">
+                <th>{{ task.parent_task.title }}</th>
                 <td>{{ task.title }}</td>
                 <td>{{ task.priority }}</td>
                 <td>{{ task.deadline }}</td>
@@ -53,10 +55,11 @@
             {% endfor %}
             {% endif %}
             <tr>
-                <th colspan="5">Completed tasks</th>
+                <th colspan="6">Completed tasks</th>
             </tr>
             <tr>
-                <th width="45%">Title</th>
+                <th width="22%">Parent</th>
+                <th width="23%">Title</th>
                 <th width="auto">Priority</th>
                 <th width="auto">Deadline</th>
                 <th width="auto">Owner</th>
@@ -65,6 +68,7 @@
             {% if complete_tasks %}
             {% for task in complete_tasks %}
             <tr onclick="window.location.href = '{% url 'project_manager:details' task.pk %}'">
+                <th>{{ task.parent_task.title }}</th>
                 <td>{{ task.title }}</td>
                 <td>{{ task.priority }}</td>
                 <td>{{ task.deadline }}</td>
