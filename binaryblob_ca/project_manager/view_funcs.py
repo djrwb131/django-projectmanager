@@ -1,9 +1,14 @@
 # Non class-based views, and their supporting functions
 from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse
 from django.utils.timezone import now
 
 from .models import EventModel, TaskModel, StatusModel, TaskNoteModel
+
+
+def room(request, room_name):
+    return render(request, 'project_manager/widgets/chat_widget.html', { 'room_name': room_name} )
 
 
 def log_event(obj, owner, field, old_value, new_value):
