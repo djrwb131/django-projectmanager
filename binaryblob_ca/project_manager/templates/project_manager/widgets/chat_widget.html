@@ -8,13 +8,11 @@
         const chatSocket = new WebSocket(
             "ws://"
             + window.location.host
-            + "/chat/"
-            + roomName
-            + "/"
+            + "/chat/project_manager/"
         );
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            document.querySelector("#chat_log").value += (data.message + "\n");
+            document.querySelector("#chat_log").value += ("[" + data.user + "]: " + data.message + "\n");
         };
         chatSocket.onclose = function(e) {
             console.error("Chat socket closed unexpectedly");

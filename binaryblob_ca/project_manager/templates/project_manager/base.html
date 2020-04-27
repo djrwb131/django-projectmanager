@@ -7,18 +7,25 @@
     <link rel="stylesheet" type="text/css" href="{% static 'project_manager/stylesheet.css' %}">
 </head>
 <body>
-<div class="message_container">
-    {% if messages %}
-    {% for message in messages %}
-    <div class="alert {{ message.tags }} alert-dismissable" role="alert">
+
+<div style="display:grid; grid-template-columns: 60% auto;max-width:100%;">
+    <div class="main_container">
+    {% block content %}{% endblock %}
+    </div>
+    <div class="right-bar" style="display:inline-grid;grid-template-rows: auto auto;">
+        {% if messages %}
+        <div class="message_container">
+            {% for message in messages %}
+                <div class="alert {{ message.tags }} alert-dismissable" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% include 'project_manager/widgets/chat_widget.html' %}
 
     </div>
-    {{ message }}
-    {% endfor %}
-    {% endif %}
-</div>
-<div class="main_container">
-{% block content %}{% endblock %}
 </div>
 </body>
 </html>

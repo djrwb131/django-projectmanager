@@ -14,6 +14,19 @@ class StatusModel(models.Model):
         return self.title
 
 
+class ChatLogModel(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    message = models.TextField()
+    group_name = models.CharField(max_length=80)
+
+    def log(self, event):
+        self.user = User.objects.get(username=event['user'])
+        self.message = event['message']
+        self.group_name = event['group_name']
+        self.save()
+
+
 class TaskModel(models.Model):
     # It's very difficult to set a default here - it'll have to be dealt with as soon as the null
     # is detected somewhere else (like the form, maybe)

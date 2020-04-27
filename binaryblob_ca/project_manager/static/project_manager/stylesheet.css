@@ -74,7 +74,8 @@ td {
 }
 
 .main_container {
-	width: 1024px;
+	width: 100%;
+	min-width: 800px;
 	margin: auto;
 	margin-top: 30px;
 }
@@ -226,4 +227,12 @@ td {
 }
 .newnote_widget_buttons {
 	margin-top: 5px;
+}
+.chat_widget {
+	margin-top: 20px;
+	margin-right: 20px;
+}
+.chat_widget textarea, .chat_widget input[type="text"] {
+	resize: none;
+	width: 100%;
 }
