@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'project_manager/stylesheet.css' %}">
 </head>
 <body>
+
 <div style="display:grid; grid-template-columns: 60% auto;max-width:100%;">
     <div style="width: 100%;height: 100%;">
     <iframe style="width: 100%;height: 100%;" src="/index"></iframe>
@@ -21,7 +22,9 @@
             {% endfor %}
         </div>
         {% endif %}
-
+        <div style="width: 100%; height: auto;">
+            <iframe style="width: 100%;height: 100%;" src="/checklist"></iframe>
+        </div>
         {% include 'project_manager/widgets/chat_widget.html' %}
     </div>
 </body>
