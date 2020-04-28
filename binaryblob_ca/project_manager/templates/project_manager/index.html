@@ -3,7 +3,7 @@
 {% block title %}Project Manager - Main Page{% endblock %}
 
 {% block content %}
-    {% if request.user.is_authenticated %}
+{% if request.user.is_authenticated %}<div style="font-weight:1000;color: white;">Hello {{request.user}}!</div>
     <a href="{% url 'project_manager:add_task' %}">(Click here to add a new task)</a>
     <a href="{% url 'logout' %}">(Click here to logout)</a>
     {% else %}
