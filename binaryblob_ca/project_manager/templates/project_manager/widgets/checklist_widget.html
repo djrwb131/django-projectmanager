@@ -1,0 +1,46 @@
+
+<div class="checklist_container" onunload="saveToDatabase()">
+    <!-- Status Up arrow/Down arrow - Number(from model.order) - Title   -->
+    <!-- Order it by step number (entry.order), then by status from not-done to totally-done -->
+    <form action="{% url 'project_manager:add_checklist_item' %}" method="post">
+        {% csrf_token %}
+        <fieldset>
+            <input type="checkbox" disabled>
+            <input name="order" type="number" style="width:36px;" value="1">
+            <input name="title" style="width:90%;" type="text">
+            <select name="task" style="width:auto;">
+                {% for task in incomplete_tasks %}
+                <option value="{{ task.id }}">{{task.title}}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="Add">
+        </fieldset>
+    </form>
+    {% if checklist %}
+    {% for entry in checklist %}
+    <form id="form_{{entry.pk}}" action="{% url 'project_manager:edit_checklist_item' entry.pk %}" method="post">
+            {% csrf_token %}
+            <fieldset>
+                {% if entry.status.progress_id == 100 %}
+                <input name="complete" type="checkbox" value="{{entry.id}}" checked="true">
+                {% else %}
+                <input name="complete" type="checkbox" value="{{entry.id}}">
+                {% endif %}
+                <input name="order" type="number" style="width:36px;" value="{{entry.order}}">
+                <input name="title" style=width:90%;" type="text" value="{{entry.title}}">
+                <select name="task" style="width:auto;">
+                    {% for task in incomplete_tasks %}
+                    {% if task.id == entry.task.id %}
+                        <option value="{{ task.id }}" selected>{{task.title}}</option>
+                    {% else %}
+                        <option value="{{ task.id }}">{{task.title}}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+                <input type="submit" value="Update">
+                <button type="button" onclick="window.location.href='/delete_checklist_item/{{entry.pk}}';">Delete</button>
+            </fieldset>
+    </form>
+    {% endfor %}
+    {% endif %}
+</div>

@@ -1,14 +1,53 @@
 # Non class-based views, and their supporting functions
-from django.http import HttpResponseRedirect
+from django.contrib.auth.models import User
+from django.db.models import F
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.timezone import now
 
-from .models import EventModel, TaskModel, StatusModel, TaskNoteModel
+from .models import EventModel, TaskModel, StatusModel, TaskNoteModel, ChecklistModel
 
 
 def room(request, room_name):
-    return render(request, 'project_manager/widgets/chat_widget.html', { 'room_name': room_name} )
+    return render(request, 'project_manager/widgets/chat_widget.html', {'room_name': room_name})
+
+
+def add_checklist_item(request):
+    if not request.user.is_authenticated:
+        return HttpResponse('no', status=403)
+    a = ChecklistModel()
+    a.status = StatusModel.objects.get(progress_id=0)
+    a.title = request.POST["title"]
+    a.order = request.POST["order"]
+    a.owner = User.objects.get(pk=request.user.id)
+    a.task = TaskModel.objects.get(pk=request.POST["task"])
+    a.save()
+    return HttpResponseRedirect(reverse('project_manager:checklist'))
+
+
+def delete_checklist_item(request, pk):
+    a = ChecklistModel.objects.get(pk=pk)
+    if not request.user == a.owner:
+        return HttpResponse('You are not %s !! You are %s !!' % (a.owner, request.user), status=403)
+    a.delete()
+    return HttpResponseRedirect(reverse('project_manager:checklist'))
+
+
+def edit_checklist_item(request, pk):
+    a = ChecklistModel.objects.get(pk=pk)
+    if not request.user == a.owner:
+        return HttpResponse('You are not %s !! You are %s !!' % (a.owner, request.user), status=403)
+    if "complete" in request.POST:
+        a.status = StatusModel.objects.get(progress_id=100)
+    else:
+        a.status = StatusModel.objects.get(progress_id=0)
+
+    a.title = request.POST["title"]
+    a.order = request.POST["order"]
+    a.task = TaskModel.objects.get(pk=request.POST["task"])
+    a.save()
+    return HttpResponseRedirect(reverse('project_manager:checklist'))
 
 
 def log_event(obj, owner, field, old_value, new_value):
@@ -64,9 +103,12 @@ def rollback_task_status(request, pk):
     task = TaskModel.objects.get(pk=pk)
     current = TaskModel.objects.get(pk=pk).status
     last = StatusModel.objects.filter(progress_id__lt=current.progress_id).order_by(F('progress_id').desc())[0]
-    if last.progress_id == 0:
-        log_event(task, request.user, "started_on", task.started_on, None)
-        task.started_on = None
+
+    # Not sure what this solves, but we'll leave it here in case its needed later...
+    # if last.progress_id == 0:
+    #    log_event(task, request.user, "started_on", task.started_on, None)
+    #    task.started_on = None
+
     if last:
         log_status_update(request.user, task, last)
         task.status = last

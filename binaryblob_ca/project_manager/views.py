@@ -6,12 +6,46 @@ from django.db.models import Q
 from django.views import generic
 
 from .forms import AddTaskForm, EditTaskForm
-from .models import TaskModel, TaskNoteModel
+from .models import TaskModel, TaskNoteModel, ChecklistModel
 from .view_funcs import log_new_task, log_changed_fields
 
 
 class RootView(LoginRequiredMixin, generic.TemplateView):
     template_name = "project_manager/root_index.html"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.user = None
+
+    def setup(self, request, *args, **kwargs):
+        self.user = request.user
+        return super().setup(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['checklist'] = ChecklistModel.objects.filter(Q(owner=self.user) | Q(owner=None))
+        qs = TaskModel.objects.filter(Q(owner=self.user) | Q(owner=None))
+        ctx['incomplete_tasks'] = TaskModel.get_incomplete_tasks(qs)
+        return ctx
+
+
+class ChecklistView(LoginRequiredMixin, generic.TemplateView):
+    template_name = "project_manager/widgets/checklist_widget.html"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.user = None
+
+    def setup(self, request, *args, **kwargs):
+        self.user = request.user
+        return super().setup(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['checklist'] = ChecklistModel.objects.filter(Q(owner=self.user) | Q(owner=None)).order_by("order")
+        qs = TaskModel.objects.filter(Q(owner=self.user) | Q(owner=None))
+        ctx['incomplete_tasks'] = TaskModel.get_incomplete_tasks(qs)
+        return ctx
 
 
 class IndexView(LoginRequiredMixin, generic.ListView):
@@ -36,7 +70,6 @@ class IndexView(LoginRequiredMixin, generic.ListView):
         qs = self.get_queryset()
         ctx = super().get_context_data(**kwargs)
 
-        # I've no idea. Don't ask, it just works.
         ctx['most_pressing'] = self.model.get_most_pressing(qs)
         ctx['highest_priority'] = self.model.get_highest_priority(qs)
         ctx['needs_polish'] = self.model.get_needs_polish(qs)
@@ -115,3 +148,4 @@ class EditTaskView(PermissionRequiredMixin, generic.edit.UpdateView):
         ctx['edit_mode'] = "edit"
         ctx['notes'] = self.notes_model.objects.filter(task=self.object)
         return ctx
+

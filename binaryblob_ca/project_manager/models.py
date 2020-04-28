@@ -182,6 +182,7 @@ class ChecklistModel(models.Model):
     title = models.CharField(max_length=80)
     order = models.IntegerField()
     status = models.ForeignKey(StatusModel, on_delete=models.PROTECT, default=StatusModel.objects.get(progress_id=0).pk)
+    owner = models.ForeignKey(User, on_delete=models.PROTECT)
 
 
 class KeyphraseModel(models.Model):
