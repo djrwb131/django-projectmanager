@@ -1,7 +1,6 @@
 <div class="chat_widget">
     <textarea id="chat_log" cols="80" rows="50" disabled></textarea><br/>
-    <input id="chat_message_input" type="text" size="80"><br/>
-    <input id="chat_message_send" type="button" value="Send">
+    <input id="chat_message_input" type="text" style="width:95%;"><input id="chat_message_send" type="button" style="width:5%;" value="Send">
     {{ room_name|json_script:"room_name" }}
     <script>
         const roomName = JSON.parse(document.getElementById('room_name').textContent);
