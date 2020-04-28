@@ -43,8 +43,27 @@ class TaskModel(models.Model):
     owner = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
     parent_task = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)
 
-    def get_absolute_url(self):
-        return reverse("project_manager:details", args=[self.pk])
+    @staticmethod
+    def get_fields_for_edit():
+        f = [
+            "status",
+            "started_on",
+            "completed_on",
+        ]
+        return TaskModel.get_fields_for_add() + f
+
+    @staticmethod
+    def get_fields_for_add():
+        f = [
+            "title",
+            "parent_task",
+            "owner",
+            "desc",
+            "priority",
+            "scheduled_start",
+            "deadline",
+        ]
+        return f
 
     @staticmethod
     def _retrieve_tasks_by_nearest_deadline(qs=None):
@@ -121,6 +140,9 @@ class TaskModel(models.Model):
         return qs.filter(
             status__progress_id__exact=100
         ).order_by('parent_task','priority')
+
+    def get_absolute_url(self):
+        return reverse("project_manager:details", args=[self.pk])
 
     def __str__(self):
         return self.title

@@ -30,7 +30,7 @@ class DateTimeLocalField(DateTimeField):
 class EditTaskForm(ModelForm):
     class Meta:
         model = TaskModel
-        fields = [x.name for x in model._meta.fields]
+        fields = TaskModel.get_fields_for_edit()
         field_classes = {
             'scheduled_start': DateTimeLocalField,
             'started_on': DateTimeLocalField,
@@ -42,7 +42,7 @@ class EditTaskForm(ModelForm):
 class AddTaskForm(ModelForm):
     class Meta:
         model = TaskModel
-        fields = ['priority', 'owner', 'title', 'desc', 'parent_task', 'scheduled_start', 'deadline']
+        fields = TaskModel.get_fields_for_add()
         field_classes = {
             'scheduled_start': DateTimeLocalField,
             'deadline': DateTimeLocalField,
