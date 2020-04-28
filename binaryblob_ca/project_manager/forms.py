@@ -3,12 +3,6 @@ from django.forms import ModelForm, DateTimeInput, MultiWidget, DateTimeField
 from .models import TaskModel
 
 
-class AddTaskForm(ModelForm):
-    class Meta:
-        model = TaskModel
-        fields = ['priority', 'owner', 'title', 'desc', 'parent_task', 'scheduled_start', 'deadline']
-
-
 # This doesn't work in safari or firefox. Need two versions
 # The firefox version can use two fields and combine them after
 # TODO: Have a version of this for firefox & safari - or maybe just use a more compatible version for everything
@@ -42,4 +36,14 @@ class EditTaskForm(ModelForm):
             'started_on': DateTimeLocalField,
             'deadline': DateTimeLocalField,
             'completed_on': DateTimeLocalField,
+        }
+
+
+class AddTaskForm(ModelForm):
+    class Meta:
+        model = TaskModel
+        fields = ['priority', 'owner', 'title', 'desc', 'parent_task', 'scheduled_start', 'deadline']
+        field_classes = {
+            'scheduled_start': DateTimeLocalField,
+            'deadline': DateTimeLocalField,
         }
