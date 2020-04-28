@@ -10,9 +10,11 @@
             + window.location.host
             + "/chat/project_manager/"
         );
+        const chatLog = document.querySelector("#chat_log");
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            document.querySelector("#chat_log").value += ("[" + data.user + "]: " + data.message + "\n");
+            chatLog.value += ("[" + data.user + "]: " + data.message + "\n");
+            chatLog.scrollTop = chatLog.scrollHeight;
         };
         chatSocket.onclose = function(e) {
             console.error("Chat socket closed unexpectedly");
