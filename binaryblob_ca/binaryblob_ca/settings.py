@@ -138,9 +138,12 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 ASGI_APPLICATION = "binaryblob_ca.routing.application"
+
 # TODO: Switch this to Redis later
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
     }
 }
+# TODO: Set this to something sane for production
+X_FRAME_OPTIONS = 'ALLOW-FROM http://127.0.0.1/'
