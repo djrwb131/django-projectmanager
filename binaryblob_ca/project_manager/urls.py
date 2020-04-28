@@ -4,7 +4,8 @@ from . import views, view_funcs
 
 app_name = "project_manager"
 urlpatterns = (
-    path('', views.IndexView.as_view(), name="index"),
+    path('', views.RootView.as_view(), name="root_index"),
+    path('index/', views.IndexView.as_view(), name="index"),
     path('update_status/<int:pk>/', view_funcs.update_task_status, name='update_status'),
     path('rollback_status/<int:pk>/', view_funcs.rollback_task_status, name='rollback_status'),
     path('add_task/', views.AddTaskView.as_view(), name="add_task"),

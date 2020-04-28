@@ -10,6 +10,10 @@ from .models import TaskModel, TaskNoteModel
 from .view_funcs import log_new_task, log_changed_fields
 
 
+class RootView(LoginRequiredMixin, generic.TemplateView):
+    template_name = "project_manager/root_index.html"
+
+
 class IndexView(LoginRequiredMixin, generic.ListView):
     template_name = "project_manager/index.html"
     model = TaskModel

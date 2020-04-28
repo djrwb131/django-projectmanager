@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{%block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'project_manager/stylesheet.css' %}">
+</head>
+<body>
+<div style="display:grid; grid-template-columns: 60% auto;max-width:100%;">
+    <div style="width: 100%;height: 100%;">
+    <iframe style="width: 100%;height: 100%;" src="/index"></iframe>
+    </div>
+    <div class="right-bar" style="display:inline-grid;grid-template-rows: auto auto;">
+        {% if messages %}
+        <div class="message_container">
+            {% for message in messages %}
+                <div class="alert {{ message.tags }} alert-dismissable" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% include 'project_manager/widgets/chat_widget.html' %}
+    </div>
+</body>
+</html>
