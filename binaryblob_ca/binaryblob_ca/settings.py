@@ -74,26 +74,26 @@ WSGI_APPLICATION = 'binaryblob_ca.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+# -----
+# If you can't compile on the server, use pymysql instead
+# PyMySQL is pure Python, so it doesn't need to be compiled.
+# I'll admit this is a hack, but it works - the versioning system is different, so...
+# -----
 
-# I don't want to compile on the server!
-# PyMySQL is pure Python, so we'll use that instead of mysqlclient
-import pymysql
-pymysql.install_as_MySQLdb()
-
-# I'll admit this is a hack, but it works - the versioning system is different
-pymysql.version_info = (1, 3, 13)
+# import pymysql
+# pymysql.install_as_MySQLdb()
+# pymysql.version_info = (1, 3, 13)
 
 DATABASES = {
     'default': {
-        #'ENGINE': 'django.db.backends.sqlite3',
-        #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        'ENGINE': 'django.db.backends.mysql',
-        'OPTIONS': {
-            'read_default_file':os.path.join(BASE_DIR, "my.cnf")
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        #'ENGINE': 'django.db.backends.mysql',
+        #'OPTIONS': {
+        #    'read_default_file': os.path.join(BASE_DIR, "my.cnf")
+        #},
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -113,7 +113,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
@@ -127,7 +126,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
@@ -139,11 +137,17 @@ LOGOUT_REDIRECT_URL = '/'
 
 ASGI_APPLICATION = "binaryblob_ca.routing.application"
 
-# TODO: Switch this to Redis later
+# If you can't compile, you can always use the InMemoryChannelLayer..
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
+        #"BACKEND": "channels.layers.RedisChannelLayer",
+        #"CONFIG": {
+        #    "hosts": [("redis", 6379)]
+        #}
     }
 }
+
 # TODO: Set this to something sane for production
-X_FRAME_OPTIONS = 'ALLOW-FROM http://127.0.0.1/'
+X_FRAME_OPTIONS = 'sameorigin'
