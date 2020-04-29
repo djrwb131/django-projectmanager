@@ -181,7 +181,7 @@ class ChecklistModel(models.Model):
     task = models.ForeignKey(TaskModel, on_delete=models.CASCADE, related_name="task_checklist")
     title = models.CharField(max_length=80)
     order = models.IntegerField()
-    status = models.ForeignKey(StatusModel, on_delete=models.PROTECT, default=StatusModel.objects.get(progress_id=0).pk)
+    status = models.ForeignKey(StatusModel, on_delete=models.PROTECT, default=1)
     owner = models.ForeignKey(User, on_delete=models.PROTECT)
 
 
@@ -205,7 +205,7 @@ class TaskNoteModel(models.Model):
     task = models.ForeignKey(TaskModel, on_delete=models.CASCADE, related_name="task_notes")
     text = models.TextField()
     date = models.DateTimeField()
-    owner = models.ForeignKey(User, on_delete=models.PROTECT, default=User.objects.get(username="testuser").pk)
+    owner = models.ForeignKey(User, on_delete=models.PROTECT, default=1)
 
     def __str__(self):
         return "[%s]: Note on %s" % (self.task.title, self.date)
