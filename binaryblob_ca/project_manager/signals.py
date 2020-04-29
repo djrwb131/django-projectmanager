@@ -7,14 +7,13 @@ from .models import TaskModel, StatusModel
 
 @receiver(pre_save, sender=TaskModel)
 def update_task_status(sender, **kwargs):
-    print("Cool, heard a signal from %s" % str(sender))
     update_fields = kwargs["update_fields"]
     task = kwargs["instance"]
 
     if task.status.progress_id == 0:
-        task.started_on = ""
+        task.started_on = None
     elif task.status.progress_id <= 80:
-        task.completed_on = ""
+        task.completed_on = None
     else:
         old_task = TaskModel.objects.get(pk=task.pk)
         if old_task.status != task.status:
