@@ -11,18 +11,24 @@
     {% endif %}
     <br/>
     <div class="notable_tasks">
+        {% if most_pressing %}
         <div class="task_widget_container" name="most_pressing" onclick="window.location.href = '{% url 'project_manager:details' most_pressing.pk %}'">
             Most pressing:
             {% include "project_manager/widgets/task_widget.html" with task=most_pressing %}
         </div>
+        {% endif %}
+        {% if highest_priority %}
         <div class="task_widget_container" name="highest_priority" onclick="window.location.href = '{% url 'project_manager:details' highest_priority.pk %}'">
             Highest priority:
             {% include "project_manager/widgets/task_widget.html" with task=highest_priority %}
         </div>
+        {% endif %}
+        {% if needs_polish %}
         <div class="task_widget_container" name="needs_polish"  onclick="window.location.href = '{% url 'project_manager:details' needs_polish.pk %}'">
             Needs polish:
             {% include "project_manager/widgets/task_widget.html" with task=needs_polish %}
         </div>
+        {% endif %}
     </div>
     <div class="all_tasks">
         <table class="all_tasks_table">
