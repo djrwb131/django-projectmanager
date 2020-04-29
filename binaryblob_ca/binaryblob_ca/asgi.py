@@ -11,9 +11,10 @@ import os
 
 import django
 from channels.routing import get_default_application
+from channels.staticfiles import StaticFilesWrapper
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'binaryblob_ca.settings')
 
 django.setup()
 
-application = get_default_application()
+application = StaticFilesWrapper(get_default_application())
