@@ -1,0 +1,4 @@
+<input type="{{ widget.type }}" id="{{ widget.name }}" name="{{ widget.name }}"{% if widget.value != None %} value="{{ widget.value|stringformat:'s' }}"{% endif %}{% include "django/forms/widgets/attrs.html" %}>
+<button type="button" onclick="document.getElementById('{{ widget.name }}').value = ISOStringNow();">Now</button>
+<button Type="button" onclick="document.getElementById('{{ widget.name }}').value = ISOString8am();">8AM Today</button>
+<button Type="button" onclick="document.getElementById('{{ widget.name }}').value = ISOString5pm();">5PM Today</button>
