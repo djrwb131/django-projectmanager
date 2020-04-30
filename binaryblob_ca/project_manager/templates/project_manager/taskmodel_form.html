@@ -13,18 +13,16 @@
     function ISOString5pm(){
         d = new Date();
         d.setSeconds(0);
-        d.setMinutes(0);
-        hr = 17 - (d.getTimezoneOffset()/60);
-        d.setHours(hr);
+        d.setHours(17);
+        d.setMinutes(-d.getTimezoneOffset());
         return _to_datetimelocal(d);
         }
     function ISOString8am(){
         d = new Date();
         d.setSeconds(0);
-        d.setMinutes(0);
+        d.setHours(8);
+        d.setMinutes(-d.getTimezoneOffset());
 
-        hr = 8 - (d.getTimezoneOffset()/60);
-        d.setHours(hr);
         return _to_datetimelocal(d);
         }
 </script>
