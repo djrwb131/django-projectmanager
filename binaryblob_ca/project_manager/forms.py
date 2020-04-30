@@ -8,6 +8,7 @@ from .models import TaskModel
 # TODO: Have a version of this for firefox & safari - or maybe just use a more compatible version for everything
 class DateTimeLocalWidget(DateTimeInput):
     input_type = "datetime-local"
+    template_name = "project_manager/widgets/datetimelocal_widget.html"
     supports_microseconds = False
     format = '%Y-%m-%d %H:%M:%S'
 

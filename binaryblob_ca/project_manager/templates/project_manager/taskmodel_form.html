@@ -3,6 +3,31 @@
 {% block title %}Edit task{% endblock %}
 
 {% block content %}
+<script>
+    function _to_datetimelocal(date){
+        return date.toISOString().slice(0,-5);
+        }
+    function ISOStringNow(){
+        return _to_datetimelocal(new Date());
+        }
+    function ISOString5pm(){
+        d = new Date();
+        d.setSeconds(0);
+        d.setMinutes(0);
+        hr = 17 - (d.getTimezoneOffset()/60);
+        d.setHours(hr);
+        return _to_datetimelocal(d);
+        }
+    function ISOString8am(){
+        d = new Date();
+        d.setSeconds(0);
+        d.setMinutes(0);
+
+        hr = 8 - (d.getTimezoneOffset()/60);
+        d.setHours(hr);
+        return _to_datetimelocal(d);
+        }
+</script>
 <div class="taskmodel_form_container">
     <form class="taskmodel_form" method="post">
         {% csrf_token %}
