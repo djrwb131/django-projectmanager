@@ -10,6 +10,7 @@ django = "*"
 mysqlclient = "*"
 channels = "*"
 channels-redis = "*"
+twisted = {extras = ["http2", "tls"],version = "*"}
 
 [requires]
 python_version = "3.6"
