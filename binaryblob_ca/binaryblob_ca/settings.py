@@ -25,6 +25,10 @@ SECRET_KEY = '02ki*fno-iw0soqz1(@9sp5=-5)6nd*cpeyxj45tdqga877@8r'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# Enable this if you want SQLite and an in memory channels layer
+STANDALONE = True
+
+
 ALLOWED_HOSTS = []
 
 
@@ -84,16 +88,22 @@ WSGI_APPLICATION = 'binaryblob_ca.wsgi.application'
 # pymysql.install_as_MySQLdb()
 # pymysql.version_info = (1, 3, 13)
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        #'ENGINE': 'django.db.backends.mysql',
-        #'OPTIONS': {
-        #    'read_default_file': os.path.join(BASE_DIR, "my.cnf")
-        #},
+if STANDALONE:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'OPTIONS': {
+               'read_default_file': os.path.join(BASE_DIR, "my.cnf")
+            },
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -138,16 +148,21 @@ LOGOUT_REDIRECT_URL = '/'
 ASGI_APPLICATION = "binaryblob_ca.routing.application"
 
 # If you can't compile, you can always use the InMemoryChannelLayer..
-
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-        #"BACKEND": "channels.layers.RedisChannelLayer",
-        #"CONFIG": {
-        #    "hosts": [("redis", 6379)]
-        #}
+if STANDALONE:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
+        }
     }
-}
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+               "hosts": [("redis", 6379)]
+            }
+        }
+    }
 
 # TODO: Set this to something sane for production
 X_FRAME_OPTIONS = 'sameorigin'
