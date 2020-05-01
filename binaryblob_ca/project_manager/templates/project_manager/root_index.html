@@ -7,7 +7,14 @@
     <link rel="stylesheet" type="text/css" href="{% static 'project_manager/stylesheet.css' %}">
 </head>
 <body>
-
+<div class="topbar">
+    {% if request.user.is_authenticated %}<em style="font-weight:1000;color: white;">Hello {{request.user}}!</em>
+    <button type="button" onclick="window.location.href='{% url 'project_manager:add_task' %}';">(Click here to add a new task)</button>
+    <button type="button" onclick="window.location.href='{% url 'logout' %}';">(Click here to logout)</button>
+    {% else %}
+    <button type="button" onclick="window.location.href='{% url 'login' %}';">(Click here to login)</button>
+    {% endif %}
+</div>
 <div style="display:grid; grid-template-columns: 60% auto;max-width:100%;">
     <div style="width: 100%;height: 100%;">
     <iframe style="width: 100%;height: 100%;" src="/index"></iframe>

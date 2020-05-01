@@ -13,14 +13,6 @@ if ( window.location !== window.parent.location ) {
     }
 }
 </script>
-    <div class="topbar">
-    {% if request.user.is_authenticated %}<em style="font-weight:1000;color: white;">Hello {{request.user}}!</em>
-    <button type="button" onclick="window.location.href='{% url 'project_manager:add_task' %}';">(Click here to add a new task)</button>
-    <button type="button" onclick="window.location.href='{% url 'logout' %}';">(Click here to logout)</button>
-    {% else %}
-    <button type="button" onclick="window.location.href='{% url 'login' %}';">(Click here to login)</button>
-    {% endif %}
-    </div>
     <div class="notable_tasks">
         {% if most_pressing %}
         <div class="task_widget_container" name="most_pressing" onclick="window.location.href = '{% url 'project_manager:details' most_pressing.pk %}'">
