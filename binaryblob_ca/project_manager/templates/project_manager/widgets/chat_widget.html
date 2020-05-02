@@ -13,7 +13,7 @@
         const chatSocket = new WebSocket(
             ws_proto + "//"
             + window.location.host
-            + "/chat/roomName/"
+            + "/chat/" + roomName + "/"
         );
         const chatLog = document.querySelector("#chat_log");
         chatSocket.onmessage = function(e) {
