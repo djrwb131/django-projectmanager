@@ -5,8 +5,8 @@
 {% block content %}
 <div class="taskmodel_detail_container">
     <p>
-    <a href="{% url 'project_manager:edit_task' object.pk %}">Edit this task</a>
-    <a href="{% url 'project_manager:index' %}">Back to index</a><br/>
+        <button type="button" onclick="window.location.href='{% url 'project_manager:edit_task' object.pk %}'">Edit this task</button>
+        <button type="button" onclick="window.location.href='{% url 'project_manager:index' %}'">Back to index</button>
     </p>
     <h3>{{ object.title }}</h3>
     <div class="detail_line" name="owner">Owner: {{ object.owner }}</div>
