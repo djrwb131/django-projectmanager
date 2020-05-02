@@ -7,9 +7,14 @@
     <link rel="stylesheet" type="text/css" href="{% static 'project_manager/stylesheet.css' %}">
 </head>
 <body>
+<script>
+if ( window.location !== window.parent.location ) {
+    console.log(`iframe detected for ${window.location.pathname} - redirecting to {% url 'project_manager:index' %}`);
+    window.location.replace("{% url 'project_manager:index' %}");
+}
+</script>
 <div class="topbar">
     {% if request.user.is_authenticated %}<em style="font-weight:1000;color: white;">Hello {{request.user}}!</em>
-    <button type="button" onclick="window.location.href='{% url 'project_manager:add_task' %}';">(Click here to add a new task)</button>
     <button type="button" onclick="window.location.href='{% url 'logout' %}';">(Click here to logout)</button>
     {% else %}
     <button type="button" onclick="window.location.href='{% url 'login' %}';">(Click here to login)</button>

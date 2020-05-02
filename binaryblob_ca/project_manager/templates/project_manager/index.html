@@ -4,15 +4,12 @@
 
 {% block content %}
 <script>
-if ( window.location !== window.parent.location ) {
-    console.log(`iframe detected for ${window.location.pathname} - this is probably normal`)
-    if(window.location.pathname !== "{% url 'project_manager:index' %}") {
-        console.log(`Hey, we're at ${window.location.pathname}; should be `+ "{% url 'project_manager:index' %}")
-        console.log("Redirecting...");
-        window.location.replace("{% url 'project_manager:index' %}");
-    }
+if ( window.location == window.parent.location ) {
+    console.log(`${window.location.pathname} should not be in the root frame - redirecting to {% url 'project_manager:root_index' %}`);
+    window.location.replace("{% url 'project_manager:root_index' %}");
 }
 </script>
+    <button type="button" onclick="window.location.href='{% url 'project_manager:add_task' %}';">(Click here to add a new task)</button>
     <div class="notable_tasks">
         {% if most_pressing %}
         <div class="task_widget_container" name="most_pressing" onclick="window.location.href = '{% url 'project_manager:details' most_pressing.pk %}'">
