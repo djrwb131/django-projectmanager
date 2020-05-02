@@ -37,7 +37,7 @@ if ( window.location !== window.parent.location ) {
         <div style="width: 100%; height: auto;">
             <iframe style="width: 100%;height: 100%;" src="/checklist"></iframe>
         </div>
-        {% include 'project_manager/widgets/chat_widget.html' %}
+        {% include 'project_manager/widgets/chat_widget.html' with room_name="project_manager" %}
     </div>
 </body>
 </html>
