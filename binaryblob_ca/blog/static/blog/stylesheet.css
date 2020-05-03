@@ -1,0 +1,238 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto:400,500,700,300,100);
+:root {
+	--main-bg-color: #111111;
+	--sec-bg-color: #222222;
+
+	--color-dark1: #2E3F50;
+	--color-dark2: #324A60;
+	--color-dark3: #123040;
+	--color-mid: #3F90A2;
+	--color-light1: #86E497;
+	--color-light2: #1CBD9D;
+
+	--main-fg-color: #AAAAAA;
+	--sec-fg-color: #C6C5B9;
+
+	--notes-border-color: var(--color-dark1);
+	--notes-headline-fg-color: var(--color-light2);
+	--notes-headline-bg-color: var(--sec-bg-color);
+
+	--notes-textbox-fg-color: var(--main-fg-color);
+	--notes-textbox-bg-color: var(--main-bg-color);
+
+	--task_widget-fg: var(--color-light2);
+	--task_widget-bg: var(--color-dark2);
+	--task_widget-fg-title: var(--color-light1);
+	--task_widget-bg-title: var(--color-dark1);
+	--task_widget-border: var(--color-dark3);
+
+	--highlight-fg-color: var(--main-bg-color);
+	--highlight-bg-color: var(--color-mid);
+
+	--table-th-bg-color: var(--color-dark3);
+	--table-th-fg-color: var(--color-mid);
+	--table-tr-bg-color1: var(--color-dark1);
+	--table-tr-bg-color2: var(--color-dark2);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+  	font-family: "Roboto", helvetica, arial, sans-serif;
+	font-size: 12px;
+	font-weight: normal;
+	text-rendering: geometricPrecision;
+	box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-font-smoothing: antialiased;
+    -o-font-smoothing: antialiased;
+    font-smoothing: antialiased;
+    background-color: var(--main-bg-color);
+	color: var(--main-fg-color);
+}
+label {
+	background: inherit;
+}
+pre {
+	overflow-x: auto;
+	white-space: pre-wrap;
+	white-space: -moz-pre-wrap;
+	white-space: -pre-wrap;
+	white-space: -o-pre-wrap;
+	word-wrap: break-word;
+}
+
+
+a {
+	background: inherit;
+}
+td {
+	background: inherit;
+	color: inherit;
+}
+
+.main_container {
+	width: 100%;
+	min-width: 800px;
+	margin: auto;
+	margin-top: 30px;
+}
+
+.message_container {
+	border: solid 2px;
+}
+
+.notes_widget_container {
+	margin-top: 20px;
+	border: solid 2px;
+	border-color: var(--notes-border-color);
+}
+.note_entry h3, .taskmodel_detail_container h3 {
+	color: var(--notes-headline-fg-color);
+	background: var(--notes-headline-bg-color);
+}
+.note_entry pre {
+	color: var(--notes-textbox-fg-color);
+	background-color: var(--notes-textbox-bg-color);
+}
+.taskmodel_detail_container .detail_line {
+	background: var(--color-dark1);
+}
+.taskmodel_detail_container pre {
+	background: inherit;
+}
+.taskmodel_detail_container .detail_line:nth-child(odd) {
+	background: var(--color-dark2);
+}
+.notable_tasks {
+	display: inline-grid;
+	max-width: inherit;
+	width: 100%;
+	height: 100px;
+	grid-column-gap: 5%;
+	grid-template-columns: 30% 30% 30%;
+}
+
+.notable_tasks .task_widget {
+	text-align: center;
+	border-style: dotted;
+	margin: 10px;
+	height: auto;
+}
+
+.task_widget {
+	border: dotted 1px;
+	border-color: var(--task_widget-border);
+}
+.task_widget_container {
+
+	width: 100%;
+	height: auto;
+}
+.task_widget .tw_title {
+	color: var(--task_widget-fg-title);
+	background: var(--task_widget-bg-title);
+}
+
+.all_tasks, .taskmodel_form, .all_tasks table, .taskmodel_form table  {
+	width: 100%;
+}
+.login_table tr{
+	background: var(--color-dark2);
+}
+.login_table tr:nth-child(odd){
+	background: var(--color-dark3);
+}
+.login_table td, .login_table label{
+	background: inherit;
+}
+.all_tasks th, .taskmodel_form th {
+	background: var(--table-th-bg-color);
+	color: var(--table-th-fg-color);
+}
+.all_tasks tr, .taskmodel_form tr {
+		background: var(--table-tr-bg-color1);
+}
+.all_tasks tr:nth-child(odd), .taskmodel_form tr:nth-child(odd) {
+		background: var(--table-tr-bg-color2);
+}
+.all_tasks tr:hover, .taskmodel_form tr:hover {
+		background: var(--table-tr-bg-highlight);
+		color: var(--table-tr-fg-highlight);
+}
+
+.details_container {
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+}
+
+.details_form .notes_form {
+  padding: 25px;
+  margin: 150px 0;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+}
+
+.copyright {
+  text-align: center;
+}
+
+::-webkit-input-placeholder {
+  color: #888;
+}
+
+:-moz-placeholder {
+  color: #888;
+}
+
+::-moz-placeholder {
+  color: #888;
+}
+
+:-ms-input-placeholder {
+  color: #888;
+}
+
+.taskmodel_form input[type="text"],
+.taskmodel_form input[type="datetime"],
+.taskmodel_form input[type="number"],
+.taskmodel_form select,
+.taskmodel_form textarea {
+	background: inherit;
+	color: inherit;
+	height: 100%;
+	width: 100%;
+	resize: none;
+	border: none;
+}
+.newnote_widget_container {
+	height: 200px;
+	width: 100%;
+	border: none;
+	display: grid;
+	grid-template-rows: 20px auto 25px;
+}
+
+.newnote_form {
+	background: inherit;
+	color: inherit;
+}
+.newnote_widget_textarea {
+	width: 100%;
+	height: 100%;
+	resize: none;
+}
+.newnote_widget_buttons {
+	margin-top: 5px;
+}
+.chat_widget {
+	margin-top: 20px;
+	margin-right: 20px;
+}
+.chat_widget textarea, .chat_widget input[type="text"] {
+	resize: none;
+	width: 100%;
+}

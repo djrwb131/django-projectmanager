@@ -1,0 +1,22 @@
+{% extends "blog/base.html" %}
+
+{% block title %}{{blog.owner}}'s Blog - Main Page{% endblock %}
+
+{% block content %}
+    {% if request.user == blog_owner %}
+        <button type="button" onclick="window.location.href='{% url 'blog:add_entry' %}';">Add a blog entry</button>
+    {% endif %}
+    <div class="most_recent">
+        {% if blog_entries %}
+        <ul>
+            {% for entry in object_list %}
+            <li><div class="blog_entry">
+                <a href="{% url 'blog:detail' entry.pk %}">{{entry.created_on}} - "{{entry.title}}", last edited {{ entry.last_edited }}</a>
+            </div></li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>You haven't written anything yet!</p>
+        {% endif %}
+    </div>
+{% endblock %}

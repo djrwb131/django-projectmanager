@@ -1,0 +1,20 @@
+{% if comments %}
+    {% for comment in comments %}
+    <div class="note_entry">
+        <h3>From {{comment.owner}} on {{comment.created_on}}:</h3>
+        <h1>Last edited on: {{comment.last_edited}}</h1>
+        <pre>{{ comment.body }}</pre>
+    </div>
+    {% endfor %}
+<form class="newnote_form" action="{% url 'project_manager:add_note' object.pk %}" method="post">
+        {% csrf_token %}
+    <div class="newnote_widget_container">
+        <div class="newnote_widget_text">
+            <textarea class="newnote_widget_textarea" name="task_note"></textarea>
+        </div>
+        <div class="newnote_widget_buttons">
+            <input type="submit" value="Add comment">
+            <input type="reset" value="Delete text">
+        </div>
+    </div>
+</form>
