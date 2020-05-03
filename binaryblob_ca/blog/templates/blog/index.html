@@ -1,6 +1,6 @@
 {% extends "blog/base.html" %}
 
-{% block title %}{{blog.owner}}'s Blog - Main Page{% endblock %}
+{% block title %}{{blog_owner}}'s Blog - Main Page{% endblock %}
 
 {% block content %}
     {% if request.user == blog_owner %}
