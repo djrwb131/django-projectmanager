@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'project_manager.apps.ProjectManagerConfig',
+    'blog.apps.BlogConfig',
     'channels'
 ]
 
