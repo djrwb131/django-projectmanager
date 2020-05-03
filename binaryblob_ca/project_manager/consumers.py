@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from asgiref.sync import async_to_sync
 from channels.auth import login, logout
+from channels.exceptions import StopConsumer
 from channels.generic.websocket import WebsocketConsumer
 from django.utils.timezone import now
 
@@ -21,15 +22,20 @@ class ChatConsumer(WebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
         self.room_name = None
-        self.room_group_name = None
+        self.room_group_name = "ERROR"
         self.user = None
         self.logs = []
         super().__init__(*args, **kwargs)
 
     def connect(self):
+        if not self.user or not self.user.is_authenticated:
+            raise StopConsumer("User was not logged in")
         login(self.scope, self.user)
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.user = self.scope['user'].username
+        if not self.room_name:
+            logout(self.scope)
+            raise StopConsumer("No room name was selected")
         self.room_group_name = 'chat_%s' % self.room_name
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name,
@@ -47,6 +53,7 @@ class ChatConsumer(WebsocketConsumer):
             self.channel_name
         )
         logout(self.scope)
+        raise StopConsumer("Disconnected")
 
     def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
