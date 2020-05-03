@@ -6,9 +6,9 @@
 <div class="taskmodel_detail_container">
     <p>
         {% if object.user == request.user %}
-            <button type="button" onclick="window.location.href='{% url 'project_manager:edit_task' object.pk %}'">Edit this entry</button>
+            <button type="button" onclick="window.location.href='{% url 'blog:edit' object.pk %}'">Edit this entry</button>
         {% endif %}
-        <button type="button" onclick="window.location.href='{% url 'project_manager:index' %}'">Back to index</button>
+        <button type="button" onclick="window.location.href='{% url 'blog:root' %}'">Back to index</button>
     </p>
     <h3>{{ object.title }}</h3>
     <div class="detail_line" name="user_and_creation_date">By {{ object.user }}, {{ object.created_on}}</div>
@@ -16,6 +16,6 @@
     <div class="detail_line" name="body"><pre>{{ object.body }}</pre></div>
 </div>
 
-{% include 'project_manager/widgets/comments_widget.html' %}
+{% include 'blog/widgets/comments_widget.html' %}
 
 {% endblock %}

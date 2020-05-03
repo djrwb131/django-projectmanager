@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 
 class BlogEntryModel(models.Model):
@@ -9,6 +10,12 @@ class BlogEntryModel(models.Model):
     title = models.CharField(max_length=80)
     body = models.TextField(max_length=65536)
 
+    def get_absolute_url(self):
+        return reverse("blog:details", args=[self.pk])
+
+    def str(self):
+        return self.title
+
 
 class CommentModel(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.PROTECT)
@@ -16,10 +23,15 @@ class CommentModel(models.Model):
     last_edited = models.DateTimeField(auto_now=True, null=False)
     body = models.TextField(max_length=4096)
 
+    def str(self):
+        if len(self.body) > 30:
+            return self.body[:27] + "..."
+        return self.body
+
 
 class BlogCommentModel(models.Model):
-    blog = models.ForeignKey(BlogEntryModel, on_delete=models.PROTECT, null=False)
-    comment = models.ForeignKey(CommentModel, on_delete=models.PROTECT, null=False)
+    blog = models.ForeignKey(BlogEntryModel, on_delete=models.PROTECT, null=False, related_name="comments_with_blog_pk")
+    comment = models.ForeignKey(CommentModel, on_delete=models.PROTECT, null=False, related_name="comment_pk_to_blog")
 
 
 class BlogEditModel(models.Model):

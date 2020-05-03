@@ -13,7 +13,7 @@
             <tr>
                 <th colspan="2" align="right">
                     <input type="submit" value="Add Blog Entry">
-                    <button type="button" onclick="window.location.href='{% url 'blog:index' object.user.pk %}'">Cancel</button>
+                    <button type="button" onclick="window.location.href='{% url 'blog:root' %}'">Cancel</button>
                 </th>
             </tr>
         {% else %}
@@ -27,7 +27,7 @@
         </table>
     </form>
 </div>
-
-{% include 'project_manager/widgets/comments_widget.html' %}
-
+{% if edit_mode == "update" %}
+{% include 'blog/widgets/comments_widget.html' %}
+{% endif %}
 {% endblock %}

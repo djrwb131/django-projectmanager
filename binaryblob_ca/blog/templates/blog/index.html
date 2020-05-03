@@ -7,11 +7,11 @@
         <button type="button" onclick="window.location.href='{% url 'blog:add_entry' %}';">Add a blog entry</button>
     {% endif %}
     <div class="most_recent">
-        {% if blog_entries %}
+        {% if object_list %}
         <ul>
             {% for entry in object_list %}
             <li><div class="blog_entry">
-                <a href="{% url 'blog:detail' entry.pk %}">{{entry.created_on}} - "{{entry.title}}", last edited {{ entry.last_edited }}</a>
+                {{entry.created_on}} - <a href="{% url 'blog:details' entry.pk %}">"{{entry.title}}"</a> ( last edited {{ entry.last_edited }} )
             </div></li>
             {% endfor %}
         </ul>
