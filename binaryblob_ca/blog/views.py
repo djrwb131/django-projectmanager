@@ -49,6 +49,7 @@ class BlogAddView(LoginRequiredMixin, generic.CreateView):
     def __init__(self):
         super().__init__()
         self.user = None
+        self.object = None
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
