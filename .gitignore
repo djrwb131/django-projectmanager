@@ -3,5 +3,6 @@
 /binaryblob_ca/project_manager/migrations/
 /binaryblob_ca/certs/
 /binaryblob_ca/binaryblob_ca/settings.py
+*/__pycache__/
 /backups/
 /binaryblob_ca/blog/migrations/
