@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.forms import CharField
 from django.forms import models as model_forms
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
 # Create your views here.
@@ -55,18 +55,11 @@ class BlogAddView(LoginRequiredMixin, generic.CreateView):
         super().setup(request, *args, **kwargs)
         self.user = request.user
 
-    def post(self, request, *args, **kwargs):
-        # a bit complicated - is there a better way?
-        fields = self.fields
-        fields.append("user")
-        form_class = model_forms.modelform_factory(self.model, fields=fields)
-        post = request.POST.copy()
-        post["user"] = request.user
-        form = form_class(post)
-        if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.user = self.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
