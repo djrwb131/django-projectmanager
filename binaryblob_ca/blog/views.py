@@ -6,8 +6,10 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
 # Create your views here.
+from django.urls import reverse
 from django.views import generic
 
+from . import forms
 from .models import BlogEntryModel, CommentModel
 
 
@@ -44,7 +46,7 @@ class BlogView(generic.DetailView):
 
 class BlogAddView(LoginRequiredMixin, generic.CreateView):
     model = BlogEntryModel
-    fields = ["title", "body"]
+    form_class = forms.BlogEntryForm
 
     def __init__(self):
         super().__init__()
@@ -69,7 +71,7 @@ class BlogAddView(LoginRequiredMixin, generic.CreateView):
 
 class BlogEditView(LoginRequiredMixin, generic.UpdateView):
     model = BlogEntryModel
-    fields = ["title", "body"]
+    form_class = forms.BlogEntryForm
 
     def get(self, request, *args, **kwargs):
         try:
