@@ -21,11 +21,11 @@ class ChatConsumer(WebsocketConsumer):
     global LOGS
 
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.room_name = None
         self.room_group_name = "ERROR"
-        self.user = None
+        self.user = self.scope['user']
         self.logs = []
-        super().__init__(*args, **kwargs)
 
     def connect(self):
         if not self.user or not self.user.is_authenticated:
