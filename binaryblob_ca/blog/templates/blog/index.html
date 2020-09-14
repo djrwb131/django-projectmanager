@@ -3,20 +3,40 @@
 {% block title %}{{blog_owner}}'s Blog - Main Page{% endblock %}
 
 {% block content %}
+<div class="row">
     {% if request.user == blog_owner %}
         <button type="button" onclick="window.location.href='{% url 'blog:add_entry' %}';">Add a blog entry</button>
     {% endif %}
-    <div class="most_recent">
-        {% if object_list %}
-        <ul>
-            {% for entry in object_list %}
-            <li><div class="blog_entry">
-                {{entry.created_on}} - <a href="{% url 'blog:details' entry.pk %}">"{{entry.title}}"</a> ( last edited {{ entry.last_edited }} )
-            </div></li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p>You haven't written anything yet!</p>
-        {% endif %}
+</div>
+<div class="row">
+    {% if object_list %}
+    <div class="col-sm">
+    <ul>
+        {% for entry in object_list %}
+        <li>
+            {{entry.created_on}} - <a href="{% url 'blog:details' entry.pk %}">"{{entry.title}}"</a> ( last edited {{ entry.last_edited }} )
+        </li>
+        {% endfor %}
+    </ul>
     </div>
+</div>
+<div class="row">
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+
+            <li class="{% if not page_obj.has_previous %}disabled {% endif %}page-item"><a class="page-link" href="?page=1">First</a></li>
+            {% for page_num in nav_page_range %}
+                    {% if page_num == page_obj.number %}
+                        <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="?page={{page_num}}">{{ page_num }}</a></li>
+                    {% endif %}
+            {% endfor %}
+            <li class="{% if not page_obj.has_next %}disabled {% endif %}page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a></li>
+        </ul>
+    </nav>
+    {% else %}
+        <p>You haven't written anything yet!</p>
+    {% endif %}
+</div>
 {% endblock %}

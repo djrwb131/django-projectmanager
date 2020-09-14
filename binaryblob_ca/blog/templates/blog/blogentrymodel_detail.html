@@ -1,6 +1,6 @@
-{% extends "project_manager/base.html" %}
+{% extends "blog/base.html" %}
 
-{% block title %}Editing: "{{object.title}}"{% endblock %}
+{% block title %}{{object.title}} - {{object.user}}'s blog{% endblock %}
 
 {% block content %}
 <div class="taskmodel_detail_container">

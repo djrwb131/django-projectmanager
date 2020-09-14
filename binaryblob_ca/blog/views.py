@@ -2,25 +2,30 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.forms import CharField
 from django.forms import models as model_forms
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
 # Create your views here.
+from django.urls import reverse
 from django.views import generic
 
+from . import forms
 from .models import BlogEntryModel, CommentModel
 
 
 class IndexView(generic.ListView):
     template_name = "blog/index.html"
+    paginate_by = 10
 
     def __init__(self):
         super().__init__()
         self.user = None
+        self.page = 1
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
         self.user = User.objects.get(pk=kwargs['pk'])
+        self.page = int(request.GET.get('page', 1))
 
     def get_queryset(self, **kwargs):
         if not self.queryset:
@@ -30,6 +35,15 @@ class IndexView(generic.ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['blog_owner'] = self.user
+        max_page = ctx['page_obj'].paginator.num_pages+1
+        page_range = min(max_page, 7)
+        if self.page < 4:
+            ctx['nav_page_range'] = list(range(1,page_range))
+        elif self.page > max_page - 4:
+            ctx['nav_page_range'] = list(range(max(1,max_page-page_range), max_page))
+        else:
+            ctx['nav_page_range'] = list(range(max(1, self.page-3), min(self.page+4, max_page)))
+        ctx['menu_items'] = [{'href': reverse('blog:index', args=[self.user.pk]), 'text': 'Index'}]
         return ctx
 
 
@@ -44,7 +58,7 @@ class BlogView(generic.DetailView):
 
 class BlogAddView(LoginRequiredMixin, generic.CreateView):
     model = BlogEntryModel
-    fields = ["title", "body"]
+    form_class = forms.BlogEntryForm
 
     def __init__(self):
         super().__init__()
@@ -55,18 +69,11 @@ class BlogAddView(LoginRequiredMixin, generic.CreateView):
         super().setup(request, *args, **kwargs)
         self.user = request.user
 
-    def post(self, request, *args, **kwargs):
-        # a bit complicated - is there a better way?
-        fields = self.fields
-        fields.append("user")
-        form_class = model_forms.modelform_factory(self.model, fields=fields)
-        post = request.POST.copy()
-        post["user"] = request.user
-        form = form_class(post)
-        if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.user = self.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -76,7 +83,7 @@ class BlogAddView(LoginRequiredMixin, generic.CreateView):
 
 class BlogEditView(LoginRequiredMixin, generic.UpdateView):
     model = BlogEntryModel
-    fields = ["title", "body"]
+    form_class = forms.BlogEntryForm
 
     def get(self, request, *args, **kwargs):
         try:
