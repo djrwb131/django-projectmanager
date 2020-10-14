@@ -1,15 +1,18 @@
   version: '3'
+  networks:
+    internal:
+      driver: bridge
   volumes:
     mariadb_volume:
+      external: true
+    nginx_volume:
       external: true
   services:
     mariadb:
       build: mariadb/
       hostname: mariadb
       networks:
-        default:
-          aliases:
-            - mariadb
+        - internal
       environment:
         - MYSQL_ROOT_PASSWORD=dude_dont_do_that
         - MYSQL_DATABASE=binaryblob_ca
@@ -19,17 +22,23 @@
         - MYSQL_RANDOM_ROOT_PASSWORD=yes
       volumes:
       - mariadb_volume:/var/lib/mysql
-
+    nginx:
+      build: nginx/
+      hostname: nginx
+      networks:
+        default:
+          ports:
+            - "443:443/tcp"
+            - "80:80/tcp"
+        - internal
+      volumes:
+        nginx_volume:/opt/site
     daphne:
       build: .
       hostname: daphne
       networks:
-        default:
-          aliases:
-            - daphne
-      command: pipenv run daphne -e ssl:port=44433:privateKey=certs/dbserv.lan.key:certKey=certs/dbserv.lan.crt binaryblob_ca.asgi:application
-      ports:
-        - "443:44433/tcp"
+        - internal
+      command: pipenv run daphne -p 44433 binaryblob_ca.asgi:application
       depends_on:
         - mariadb
         - redis
